@@ -5,11 +5,14 @@ import Coordinate
 
 logStatistics board = do
   let paddleY = Domain.y $ left $ board
+      height = paddleHeight $ conf $ board
+      paddleMidY = paddleY + (fromIntegral height)
       ballY = Coordinate.y $ pos $ ball $ board
       ballX = Coordinate.x $ pos $ ball $ board
       width = paddleWidth $ conf $ board
-      distance = ballX - (fromIntegral width)
-  writeLogLine $ show $ (paddleY, ballY, distance)
+      distanceX = ballX - (fromIntegral width)
+      distanceY = ballY - paddleMidY
+  writeLogLine $ show $ (paddleMidY, ballY, distanceY, distanceX)
 
 logGameStart json = do 
   let msg = "<< GAME STARTED WITH: " ++ (show json)
