@@ -16,9 +16,8 @@ import Coordinate
 import GameLogic
 
 main = do
-  (host:port:_) <- getArgs
+  (host:port:name:_) <- getArgs
   handle <- connectSocket host (read port :: Integer)
-  let name = "pong11" :: String
   send handle "join" name
   handleMessages handle
 
