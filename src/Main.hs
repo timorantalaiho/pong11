@@ -43,7 +43,10 @@ handleMessage h "chessboard" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: ChessBoard
   putStrLn $ "<< " ++ (show board)
 
-handleMessage h anyMessage json = do putStrLn "no-op"
+handleMessage h anyMessage json = do
+  let direction = 1.0 :: Float
+  send h "changeDir" direction
+  putStrLn "no-op"
 
 instance FromJSON (String, Value) where
   parseJSON (Object v) = do
