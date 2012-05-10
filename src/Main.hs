@@ -14,6 +14,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import Domain
 import Coordinate
 import GameLogic
+import Log
 
 main = do
   (host:port:name:_) <- getArgs
@@ -55,6 +56,7 @@ handleLine state h msg = do
 handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
 handleMessage state h "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
+  logStatistics board    
   let direction = calculateDirection board
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
