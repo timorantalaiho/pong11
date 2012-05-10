@@ -13,5 +13,5 @@ data Board = Board { time :: Int, left :: Paddle, right :: Paddle, ball :: Ball,
 
 paddleMiddleY :: Board -> Float
 paddleMiddleY board =
-  paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
-  where paddleY = Domain.y $ Domain.left board
+  paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
+  where paddleY = Domain.y $ left board
