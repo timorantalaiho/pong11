@@ -7,9 +7,14 @@ type Velocity = Coordinates
 
 calculateDirection :: State -> Float
 calculateDirection state =
-  chooseDirection (paddleMiddleY board) targetY
+  chooseDirection current target
   where board = head state
-        targetY = Coordinate.y $ Domain.pos $ Domain.ball board
+        current = paddleMiddleY board
+        target = targetY state
+
+targetY :: State -> Float
+targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
+  where board = head state  
 
 ballVelocity :: State -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
