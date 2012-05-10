@@ -34,5 +34,12 @@ chooseDirection currentY targetY
   where difference = targetY - currentY
 
 targetY :: State -> Float
-targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
-  where board = head state  
+--targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
+--  where board = head state  
+targetY state = Coordinate.y leftHit
+  where hits = nextHits state
+        hitsPaddle hit = (x hit) == 0
+        leftHit = head $ filter hitsPaddle hits
+        
+nextHits :: State -> [Coordinates]
+nextHits state = [Coordinates 0 0]
