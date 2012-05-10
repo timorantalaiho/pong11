@@ -23,9 +23,6 @@ ballVelocity (s1:s2:xs) =
 vectorTo :: Coordinates -> Coordinates -> Coordinates
 vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinate.y c1) - (Coordinate.y c2))
 
-extractBallCoordinates :: Board -> Coordinates
-extractBallCoordinates board = pos $ ball board
-
 chooseDirection :: Float -> Float -> Float
 chooseDirection currentY targetY
   | difference < 0.0 = -1.0
