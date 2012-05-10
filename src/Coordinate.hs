@@ -4,4 +4,4 @@ module Coordinate where
 import Data.Data
 import Data.Typeable
 
-data Coordinates = Coordinates { x :: Int, y :: Int } deriving (Data, Typeable, Show)
+data Coordinates = Coordinates { x :: Float, y :: Float } deriving (Data, Typeable, Show)
