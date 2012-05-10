@@ -12,6 +12,7 @@ import Data.Typeable
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Domain
+import Coordinate
 
 main = do
   handle <- connectSocket "localhost" 8080
