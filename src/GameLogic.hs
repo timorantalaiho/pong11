@@ -37,7 +37,7 @@ targetY state = Coordinate.y leftHit
         leftHit = head $ filter hitsPaddle hits
         
 hitsPaddle :: Coordinates -> Board -> Bool
-hitsPaddle hit board = (x hit) == (leftWallX board)
+hitsPaddle hit board = (x hit) <= (leftWallX board)
 
 hitsOtherPaddle :: Coordinates -> Board -> Bool
 hitsOtherPaddle hit board = (x hit) >= ((fromIntegral $ maxWidth $ conf board) - (fromIntegral $ paddleWidth $ conf board))
