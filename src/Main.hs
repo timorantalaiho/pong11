@@ -49,7 +49,9 @@ handleLine state h msg = do
     Just json -> do
       let (msgType, msgData) = fromOk $ fromJSON json
       handleMessage state h msgType msgData
-    Nothing -> fail $ "Error parsing JSON: " ++ (show msg)
+    Nothing -> do 
+      putStrLn "Warning, got invalid JSON message."
+      return state
 
 handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
 handleMessage state h "gameIsOn" boardJson = do
