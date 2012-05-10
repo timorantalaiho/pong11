@@ -1,0 +1,1 @@
+{"msgType": "gameIsOn", "data": {"time": 1336219278094, "left": {"y": 190.0, "playerName": "hevonen"}, "right": {"y":300.0, "playerName":"pong11"}, "ball": {"pos": {"x":300.0, "y":88.0}}, "conf": {"maxWidth":640, "maxHeight":480, "paddleHeight":50, "paddleWidth":10, "ballRadius":5, "tickInterval":15}}}
