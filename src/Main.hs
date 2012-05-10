@@ -32,26 +32,25 @@ send h msgType msgData = do
 
 handleMessages h = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
-  handleLines 0 h lines
+  handleLines [] h lines
 
 handleLines state h lines = do
   newstate <- handleLine state h $ head lines
+  putStrLn "<< state"
   putStrLn $ show newstate
+  putStrLn "state >>"
   handleLines newstate h $ tail lines
 
-handleLine ::  Int -> Handle -> L.ByteString -> IO (Int)
+handleLine ::  State -> Handle -> L.ByteString -> IO (State)
 handleLine state h msg = do
   case decode msg of
     Just json -> do
       let (msgType, msgData) = fromOk $ fromJSON json
-      handleMessage h msgType msgData
-      return (state + 1)
+      handleMessage state h msgType msgData
     Nothing -> fail $ "Error parsing JSON: " ++ (show msg)
 
-handleMessage ::Handle -> [Char] -> Value -> IO ()
-
-handleMessage h "gameIsOn" boardJson = do
-  putStrLn "gameIsOn"
+handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
+handleMessage state h "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
   let paddleY = Domain.y $ Domain.left board
   let paddleMiddleY = paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
@@ -59,11 +58,13 @@ handleMessage h "gameIsOn" boardJson = do
   let direction = determineDirection (ballY - paddleMiddleY)
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
+  return $ take 5 $ board : state
 
-handleMessage h anyMessage json = do
+handleMessage state h anyMessage json = do
   let direction = 1.0 :: Float
   send h "changeDir" direction
   putStrLn "no-op"
+  return state
 
 determineDirection :: Float -> Float
 determineDirection difference
