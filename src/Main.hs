@@ -61,6 +61,7 @@ handleMessage state h "gameIsOn" boardJson = do
   let direction = calculateDirection newState
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
+  putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity state)
   return $ take 5 $ newState
 
 handleMessage state h "gameStarted" playersJson = do
