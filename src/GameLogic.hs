@@ -12,10 +12,6 @@ calculateDirection state =
         current = paddleMiddleY board
         target = targetY state
 
-targetY :: State -> Float
-targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
-  where board = head state  
-
 ballVelocity :: State -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
 ballVelocity [x] = Coordinates 0.0 0.0
@@ -36,3 +32,7 @@ chooseDirection currentY targetY
   | difference > 0.0 = 1.0
   | otherwise = 0.0
   where difference = targetY - currentY
+
+targetY :: State -> Float
+targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
+  where board = head state  
