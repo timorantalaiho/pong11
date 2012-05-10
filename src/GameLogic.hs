@@ -3,8 +3,6 @@ module GameLogic where
 import Domain
 import Coordinate
 
-type Velocity = Coordinates
-
 calculateDirection :: State -> Float
 calculateDirection state =
   chooseDirection current target
