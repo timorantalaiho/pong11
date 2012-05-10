@@ -43,6 +43,14 @@ handleMessage h "chessboard" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: ChessBoard
   putStrLn $ "<< " ++ (show board)
 
+--handleMessage h "gameStarted" boardJson = do
+--  let board = fromOk $ GJ.fromJSON boardJson :: ChessBoard
+--  putStrLn $ "<< " ++ (show board)
+
+handleMessage h "gameIsOn" boardJson = do
+  let board = fromOk $ GJ.fromJSON boardJson :: Board
+  putStrLn $ "<< " ++ (show board)
+
 instance FromJSON (String, Value) where
   parseJSON (Object v) = do
     msgType <- v .: "msgType"
