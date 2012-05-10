@@ -36,5 +36,8 @@ targetY state = Coordinate.y leftHit
         hitsPaddle hit = (x hit) == 0
         leftHit = head $ filter hitsPaddle hits
         
+hitsPaddle :: Coordinates -> Board -> Bool
+hitsPaddle hit board = (x hit) == (leftWallX board)
+        
 nextHits :: State -> [Coordinates]
 nextHits state = [Coordinates 0 0]
