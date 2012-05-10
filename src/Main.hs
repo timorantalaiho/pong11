@@ -32,12 +32,21 @@ send h msgType msgData = do
 
 handleMessages h = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
-  forM_ lines $ \msg -> do
-    case decode msg of
-      Just json -> do
-        let (msgType, msgData) = fromOk $ fromJSON json
-        handleMessage h msgType msgData
-      Nothing -> putStrLn $ "Error parsing JSON: " ++ (show msg)
+  handleLines 0 h lines
+
+handleLines state h lines = do
+  newstate <- handleLine state h $ head lines
+  putStrLn $ show newstate
+  handleLines newstate h $ tail lines
+
+handleLine ::  Int -> Handle -> L.ByteString -> IO (Int)
+handleLine state h msg = do
+  case decode msg of
+    Just json -> do
+      let (msgType, msgData) = fromOk $ fromJSON json
+      handleMessage h msgType msgData
+      return (state + 1)
+    Nothing -> fail $ "Error parsing JSON: " ++ (show msg)
 
 handleMessage ::Handle -> [Char] -> Value -> IO ()
 handleMessage h "chessboard" boardJson = do
