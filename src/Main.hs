@@ -36,7 +36,7 @@ handleMessages h = do
       Just json -> do
         let (msgType, msgData) = fromOk $ fromJSON json
         handleMessage h msgType msgData
-      Nothing -> fail $ "Error parsing JSON: " ++ (show msg)
+      Nothing -> putStrLn $ "Error parsing JSON: " ++ (show msg)
 
 handleMessage ::Handle -> [Char] -> Value -> IO ()
 handleMessage h "chessboard" boardJson = do
