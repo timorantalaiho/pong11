@@ -56,12 +56,23 @@ handleMessage h "chessboard" boardJson = do
 handleMessage h "gameIsOn" boardJson = do
   putStrLn "gameIsOn"
   let board = fromOk $ GJ.fromJSON boardJson :: Board
+  let paddleY = Domain.y $ Domain.left board
+  let paddleMiddleY = paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
+  let ballY = Coordinate.y $ Domain.pos $ Domain.ball board
+  let direction = determineDirection (ballY - paddleMiddleY)
+  send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
 
 handleMessage h anyMessage json = do
   let direction = 1.0 :: Float
   send h "changeDir" direction
   putStrLn "no-op"
+
+determineDirection :: Float -> Float
+determineDirection difference
+  | difference < 0.0 = -1.0
+  | difference > 0.0 = 1.0
+  | otherwise = 0.0
 
 instance FromJSON (String, Value) where
   parseJSON (Object v) = do
