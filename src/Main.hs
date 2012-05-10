@@ -52,10 +52,8 @@ handleLine state h msg = do
 handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
 handleMessage state h "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
-  let paddleY = Domain.y $ Domain.left board
-  let paddleMiddleY = paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
   let ballY = Coordinate.y $ Domain.pos $ Domain.ball board
-  let direction = determineDirection (ballY - paddleMiddleY)
+  let direction = determineDirection (ballY - (paddleMiddleY $ board))
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
   return $ take 5 $ board : state
@@ -65,6 +63,11 @@ handleMessage state h anyMessage json = do
   send h "changeDir" direction
   putStrLn "no-op"
   return state
+
+paddleMiddleY :: Board -> Float
+paddleMiddleY board =
+  paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
+  where paddleY = Domain.y $ Domain.left board
 
 determineDirection :: Float -> Float
 determineDirection difference
