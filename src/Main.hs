@@ -15,7 +15,7 @@ import Domain
 import Coordinate
 
 main = do
-  handle <- connectSocket "localhost" 8080
+  handle <- connectSocket "kappeli" 8090
   let name = "rapala" :: String
   send handle "join" name
   handleMessages handle
