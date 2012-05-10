@@ -63,16 +63,15 @@ handleMessage state h "gameIsOn" boardJson = do
   return $ take 5 $ board : state
 
 handleMessage state h "gameStarted" playersJson = do
-  putStrLn $ "<< GAME STARTED WITH: " ++ (show playersJson)
+  logGameStart playersJson
   return state
-handleMessage state h "gameEnded" winnerJson = do
-  putStrLn $ "<< AND THE WINNER IS: " ++ (show winnerJson)
+
+handleMessage state h "gameIsOver" winnerJson = do
+  logGameEnd winnerJson
   return state
 
 handleMessage state h anyMessage json = do
-  let direction = 1.0 :: Float
-  send h "changeDir" direction
-  putStrLn "no-op"
+  logUnknown json
   return state
 
 instance FromJSON (String, Value) where
