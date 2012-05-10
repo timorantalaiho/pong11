@@ -49,5 +49,10 @@ hitsFloor :: Coordinates -> Board -> Bool
 hitsFloor hit board = (Coordinate.y hit) >= (fromIntegral $ maxHeight $ conf board)
         
 nextHits :: State -> [Coordinates]
-nextHits state = [Coordinates 0 0]
+nextHits state = [dummyNextHit state]
+
+dummyNextHit :: State -> Coordinates
+dummyNextHit [] = Coordinates 0 0
+dummyNextHit (b:[]) = Coordinates 0 0
+dummyNextHit (board:bs) = Coordinates 0 (Coordinate.y $ extractBallCoordinates board)
 
