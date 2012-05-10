@@ -49,9 +49,6 @@ handleLine state h msg = do
     Nothing -> fail $ "Error parsing JSON: " ++ (show msg)
 
 handleMessage ::Handle -> [Char] -> Value -> IO ()
-handleMessage h "chessboard" boardJson = do
-  let board = fromOk $ GJ.fromJSON boardJson :: ChessBoard
-  putStrLn $ "<< " ++ (show board)
 
 handleMessage h "gameIsOn" boardJson = do
   putStrLn "gameIsOn"
