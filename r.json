@@ -1,0 +1,3 @@
+{ "msgType": "chessboard", "data": { "pieces": [ {"color": "black", "position": "d2"}, {"color": "white", "position": "c3"} ] } }
+
+
