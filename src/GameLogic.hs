@@ -3,10 +3,11 @@ module GameLogic where
 import Domain
 import Coordinate
 
-calculateDirection :: Board -> Float
-calculateDirection board =
+calculateDirection :: State -> Float
+calculateDirection state =
   chooseDirection $ (ballY - (paddleMiddleY $ board))
-  where ballY = Coordinate.y $ Domain.pos $ Domain.ball board
+  where board = head state
+        ballY = Coordinate.y $ Domain.pos $ Domain.ball board
 
 paddleMiddleY :: Board -> Float
 paddleMiddleY board =

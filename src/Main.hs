@@ -56,11 +56,12 @@ handleLine state h msg = do
 handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
 handleMessage state h "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
+      newState = board : state
   logStatistics board    
-  let direction = calculateDirection board
+  let direction = calculateDirection newState
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
-  return $ take 5 $ board : state
+  return $ take 5 $ newState
 
 handleMessage state h "gameStarted" playersJson = do
   logGameStart playersJson
