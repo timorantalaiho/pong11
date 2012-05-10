@@ -48,6 +48,7 @@ handleMessage h "chessboard" boardJson = do
 --  putStrLn $ "<< " ++ (show board)
 
 handleMessage h "gameIsOn" boardJson = do
+  putStrLn "gameIsOn"
   let board = fromOk $ GJ.fromJSON boardJson :: Board
   putStrLn $ "<< " ++ (show board)
 
@@ -60,3 +61,4 @@ instance FromJSON (String, Value) where
 
 -- JSON helpers --
 fromOk (Success x) = x
+-- fromOk (Error x) =  x
