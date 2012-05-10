@@ -13,6 +13,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Domain
 import Coordinate
+import GameLogic
 
 main = do
   (host:port:_) <- getArgs
@@ -53,8 +54,7 @@ handleLine state h msg = do
 handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
 handleMessage state h "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
-  let ballY = Coordinate.y $ Domain.pos $ Domain.ball board
-  let direction = determineDirection (ballY - (paddleMiddleY $ board))
+  let direction = calculateDirection board
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
   return $ take 5 $ board : state
@@ -64,17 +64,6 @@ handleMessage state h anyMessage json = do
   send h "changeDir" direction
   putStrLn "no-op"
   return state
-
-paddleMiddleY :: Board -> Float
-paddleMiddleY board =
-  paddleY + ((fromIntegral $ Domain.paddleHeight $ Domain.conf board) / 2.0)
-  where paddleY = Domain.y $ Domain.left board
-
-determineDirection :: Float -> Float
-determineDirection difference
-  | difference < 0.0 = -1.0
-  | difference > 0.0 = 1.0
-  | otherwise = 0.0
 
 instance FromJSON (String, Value) where
   parseJSON (Object v) = do
