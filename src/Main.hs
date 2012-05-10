@@ -66,11 +66,11 @@ handleMessage state h "gameIsOn" boardJson = do
 
 handleMessage state h "gameStarted" playersJson = do
   logGameStart playersJson
-  return state
+  return []
 
 handleMessage state h "gameIsOver" winnerJson = do
   logGameEnd winnerJson
-  return state
+  return []
 
 handleMessage state h anyMessage json = do
   logUnknown json
