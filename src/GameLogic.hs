@@ -2,6 +2,7 @@ module GameLogic where
 
 import Domain
 import Coordinate
+import Data.Maybe
 import Debug.Trace
 
 calculateDirection :: BoardHistory -> Float
@@ -46,18 +47,18 @@ targetY [] = 0.0
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
 traceBallToOurPaddle p v board
     | ballStopped v = p
-    | fst ourPaddleHit = p'
+    | isJust ourPaddleHit = p'
     | otherwise = traceBallToOurPaddle p' v' board
     where p' = advanceBall p v
           possibleHits = [ourPaddleHit, opponentPaddleHit, ceilingHit, floorHit]
-          wouldHit = foldl (||) False (map fst possibleHits)
+          hit = filter isJust possibleHits
           ourPaddleHit = hitsOurPaddle p' v board
           opponentPaddleHit = hitsOpponentPaddle p' v board
           ceilingHit = hitsCeiling p' v board
           floorHit = hitsFloor p' v board
-          v'
-           | wouldHit = snd $ head $ filter fst possibleHits
-           | otherwise = v
+          v' = case hit of
+              [Just(x)] -> x
+              _ -> v
 
 advanceBall :: Coordinates -> Velocity -> Coordinates
 advanceBall p v =
@@ -66,33 +67,33 @@ advanceBall p v =
 ballStopped :: Velocity -> Bool
 ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
-hitsOurPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOurPaddle hit v board = (isHit, v')
+hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe Velocity
+hitsOurPaddle hit v board = v'
     where isHit = (x hit) <= (leftWallX board)
           v'
-            | isHit = deflectFromPaddle v
-            | otherwise = v
+            | isHit = Just $ deflectFromPaddle v
+            | otherwise = Nothing
 
-hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOpponentPaddle hit v board = (isHit, v')
+hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe Velocity
+hitsOpponentPaddle hit v board = v'
     where isHit = (x hit) >= (rightWallX board)
           v'
-            | isHit = deflectFromPaddle v
-            | otherwise = v
+            | isHit = Just $ deflectFromPaddle v
+            | otherwise = Nothing
 
-hitsCeiling :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsCeiling hit v board = (isHit, v')
+hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe Velocity
+hitsCeiling hit v board = v'
     where isHit = (Coordinate.y hit) <= 0.0
           v'
-            | isHit = deflectFromWall v
-            | otherwise = v
+            | isHit = Just $ deflectFromWall v
+            | otherwise = Nothing
 
-hitsFloor :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsFloor hit v board = (isHit, v')
+hitsFloor :: Coordinates -> Velocity -> Board -> Maybe Velocity
+hitsFloor hit v board = v'
     where isHit = (Coordinate.y hit) >= (boardHeight board)
           v'
-            | isHit = deflectFromWall v
-            | otherwise = v
+            | isHit = Just $ deflectFromWall v
+            | otherwise = Nothing
 
 deflectFromPaddle :: Velocity -> Velocity
 deflectFromPaddle v = Coordinates (-Coordinate.x v) (Coordinate.y v)
