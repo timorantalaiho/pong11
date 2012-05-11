@@ -53,7 +53,17 @@ renderBoard board = do
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
                          .|. gl_DEPTH_BUFFER_BIT
   glLoadIdentity  -- reset view
+  
+  glScalef 0.25 0.25 1.0
+  glTranslatef (-20.0) (-10.0) 0.0
+  glScalef 0.05 0.05 1
 
+  renderBoardMarkers board
+  renderBall board
+  renderLeftPaddle board
+  renderRightPaddle board
+
+  {-
   glTranslatef (-1.5) 0 (-6.0) --Move left 1.5 Units and into the screen 6.0
 
   -- draw a triangle (in smooth coloring mode)
@@ -76,7 +86,68 @@ renderBoard board = do
   glVertex3f (-1) (-1) 0 -- bottom left
   glEnd
 
+-}
   glFlush
+
+renderQuad :: IO ()
+renderQuad = do
+  glColor3f 0.5 0.5 0.5
+  glBegin gl_QUADS -- start drawing a polygon (4 sided)
+  glVertex3f (-0.5)   0.5  0 -- top left
+  glVertex3f   0.5    0.5  0 -- top right
+  glVertex3f   0.5  (-0.5) 0 -- bottom right
+  glVertex3f (-0.5) (-0.5) 0 -- bottom left
+  glEnd
+
+renderBoardMarker :: GLfloat -> GLfloat -> IO()
+renderBoardMarker x y = do
+  glPushMatrix
+  glTranslatef x y (-6.0)
+  glScalef 10.0 10.0 1.0
+  renderQuad
+  glPopMatrix
+
+renderBoardMarkers :: Board -> IO()
+renderBoardMarkers board = do
+  renderBoardMarker 0.0 0.0
+  renderBoardMarker 640.0 0.0
+  renderBoardMarker 640.0 480.0
+  renderBoardMarker 0.0 480.0
+
+renderBall :: Board -> IO()
+renderBall board = do
+  let ballx = realToFrac $ Coordinate.x $ extractBallCoordinates board
+      bally = realToFrac $ Coordinate.y $ extractBallCoordinates board
+      radius = 5.0
+  glPushMatrix
+  glTranslatef ballx bally (-6.0)
+  glScalef radius radius 1.0
+  glColor3f 0.5 0.5 0.5
+  glBegin gl_QUADS -- start drawing a polygon (4 sided)
+  glVertex3f (-0.5)   0.5  0 -- top left
+  glVertex3f   0.5    0.5  0 -- top right
+  glVertex3f   0.5  (-0.5) 0 -- bottom right
+  glVertex3f (-0.5) (-0.5) 0 -- bottom left
+  glEnd
+  glPopMatrix
+
+renderRightPaddle :: Board -> IO()
+renderRightPaddle board = do
+  let middleY = realToFrac $ rightPaddleMiddleY board 
+  glPushMatrix
+  glTranslatef (635.0) middleY (-6.0)
+  glScalef 10 50 1.0
+  renderQuad      
+  glPopMatrix
+
+renderLeftPaddle :: Board -> IO()
+renderLeftPaddle board = do
+  let middleY = realToFrac $ paddleMiddleY board 
+  glPushMatrix
+  glTranslatef (5) middleY (-6.0)
+  glScalef 10 50 1.0
+  renderQuad      
+  glPopMatrix
 
 shutdown :: GLFW.WindowCloseCallback
 shutdown = do

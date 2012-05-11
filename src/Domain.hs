@@ -17,6 +17,11 @@ paddleMiddleY board =
   paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
   where paddleY = Domain.y $ left board
 
+rightPaddleMiddleY :: Board -> Float
+rightPaddleMiddleY board =
+  paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
+  where paddleY = Domain.y $ right board
+
 paddleW :: Board -> Float
 paddleW board = fromIntegral $ paddleWidth $ conf board
 
