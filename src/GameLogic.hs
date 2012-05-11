@@ -59,19 +59,24 @@ nextStep s = ballVelocity s
 
 isHit :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 isHit c v b = (wouldHit, v)
-  where wouldHit = (hitsPaddle c b) || (hitsOtherPaddle c b) || (hitsCeiling c b) || (hitsFloor c b)
+  where possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
+        wouldHit = foldl (||) False (map fst possibleHits)
+        myPaddleHit = hitsPaddle c v b
+        otherPaddleHit = hitsOtherPaddle c v b
+        ceilingHit = hitsCeiling c v b
+        floorHit = hitsFloor c v b
 
-hitsPaddle :: Coordinates -> Board -> Bool
-hitsPaddle hit board = ((x hit) <= (leftWallX board)) && (insideBoardY hit board)
+hitsPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsPaddle hit v board = (((x hit) <= (leftWallX board)) && (insideBoardY hit board), v)
 
-hitsOtherPaddle :: Coordinates -> Board -> Bool
-hitsOtherPaddle hit board = ((x hit) >= (rightWallX board)) && (insideBoardY hit board)
+hitsOtherPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsOtherPaddle hit v board = (((x hit) >= (rightWallX board)) && (insideBoardY hit board), v)
 
-hitsCeiling :: Coordinates -> Board -> Bool
-hitsCeiling hit board = (Coordinate.y hit) <= 0.0 && (insideBoardX hit board)
+hitsCeiling :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsCeiling hit v board = ((Coordinate.y hit) <= 0.0 && (insideBoardX hit board), v)
 
-hitsFloor :: Coordinates -> Board -> Bool
-hitsFloor hit board = (Coordinate.y hit) >= (boardHeight board) && (insideBoardX hit board)
+hitsFloor :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsFloor hit v board = ((Coordinate.y hit) >= (boardHeight board) && (insideBoardX hit board), v)
         
 insideBoardX :: Coordinates -> Board -> Bool
 insideBoardX hit board = (Coordinate.x hit) >= (leftWallX board) && (Coordinate.x hit) < (rightWallX board)
