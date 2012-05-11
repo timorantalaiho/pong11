@@ -50,12 +50,10 @@ traceBallToOurPaddle p v board hitPoints
     | ballStopped v = p : hitPoints
     | isJust ourPaddleHit = p' : hitPoints
     | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
-    where possibleHits = [ourPaddleHit, opponentPaddleHit, ceilingHit, floorHit]
+    where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
+          possibleHits = map (\ht -> ht p v board) hitTests
           hit = filter isJust possibleHits
-          ourPaddleHit = hitsOurPaddle p v board
-          opponentPaddleHit = hitsOpponentPaddle p v board
-          ceilingHit = hitsCeiling p v board
-          floorHit = hitsFloor p v board
+          ourPaddleHit = head possibleHits
           (v',p') = case hit of
               [Just (nv,np)] -> (nv,np)
               _ -> (v,p)
