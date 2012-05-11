@@ -49,10 +49,10 @@ traceBallToOurPaddle p v board
     where p' = advanceBall p v
           possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
           wouldHit = foldl (||) False (map fst possibleHits)
-          myPaddleHit = hitsPaddle p v board
-          otherPaddleHit = hitsOtherPaddle p v board
-          ceilingHit = hitsCeiling p v board
-          floorHit = hitsFloor p v board
+          myPaddleHit = hitsPaddle p' v board
+          otherPaddleHit = hitsOtherPaddle p' v board
+          ceilingHit = hitsCeiling p' v board
+          floorHit = hitsFloor p' v board
           v'
            | wouldHit = snd $ head $ filter fst possibleHits
            | otherwise = v
@@ -120,10 +120,10 @@ hitsFloor hit v board = (isHit, v')
             | otherwise = v
         
 insideBoardX :: Coordinates -> Board -> Bool
-insideBoardX hit board = (Coordinate.x hit) >= (leftWallX board) && (Coordinate.x hit) < (rightWallX board)
+insideBoardX hit board = True --(Coordinate.x hit) >= (leftWallX board) && (Coordinate.x hit) < (rightWallX board)
 
 insideBoardY :: Coordinates -> Board -> Bool        
-insideBoardY hit board = (Coordinate.y hit) >= 0.0 && (Coordinate.y hit) < (boardHeight board)
+insideBoardY hit board = True --(Coordinate.y hit) >= 0.0 && (Coordinate.y hit) < (boardHeight board) 
         
 nextHits :: State -> [Coordinates]
 nextHits state = [dummyNextHit state]
@@ -133,3 +133,7 @@ dummyNextHit [] = Coordinates 0 0
 dummyNextHit (b:[]) = Coordinates 0 0
 dummyNextHit (board:bs) = Coordinates 0 (Coordinate.y $ extractBallCoordinates board)
 
+-- Test data
+start_v2 = Coordinates 1 1
+start_p = Coordinates 15.0 15.0
+board = Board 123456 (Paddle 19 "foo") (Paddle 14 "bar") (Ball (Coordinates 30 40)) (Conf 640 480  50 10 5 15)

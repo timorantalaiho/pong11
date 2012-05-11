@@ -66,8 +66,7 @@ handleMessage state h channel "gameIsOn" boardJson = do
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
   putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity state)
-  putStrLn $ "NEXT HIT:" ++ (show $ nextHit state)
-  -- putStrLn $ "NEXT HIT:" ++ (show $ nextHit state)
+--  putStrLn $ "CURRENT TRACE:" ++ (show $ traceBallToOurPaddle (extractBallCoordinates board) (ballVelocity state) board)
   return $ take 5 $ newState
 
 handleMessage state h channel "gameStarted" playersJson = do
