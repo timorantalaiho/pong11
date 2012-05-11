@@ -45,7 +45,9 @@ nextHit (b:[]) = dummyNextHit []
 nextHit (board:bs) = projectNextHitFrom (board:bs)
 
 projectNextHitFrom :: State -> Coordinates
-projectNextHitFrom (b:bs) = head $ filter (\c -> isHit c b) ballMovements
+projectNextHitFrom (b:bs)
+  | ((Coordinate.y $ ballVelocity (b:bs)) == 0.0) = (Coordinates 0 (Domain.y $ left b))
+  | otherwise = head $ filter (\c -> isHit c b) ballMovements
   where ballMovements = scanl(vectorFrom)(extractBallCoordinates b)(repeat (ballVelocity (b:bs)))
 
 isHit :: Coordinates -> Board -> Bool
