@@ -65,16 +65,15 @@ sendmessage h commandHistory lastMessageTime oldDirection newDirection = do
   let directionChanged = abs(oldDirection - newDirection) > 0.1
       commandsInLastSec = length $ filter (duringLastSec lastMessageTime) commandHistory
       doSend = directionChanged && (commandsInLastSec < 10)
-      cmd = (Command lastMessageTime newDirection)   
-  sendmessage' h doSend newDirection
-  if doSend then return (Just(cmd)) else return (Nothing)
+  case doSend of 
+    True -> do
+      send h "changeDir" newDirection                        
+      return (Just(Command lastMessageTime newDirection))                   
+    False -> do 
+      return (Nothing)
   
 duringLastSec :: Int -> Command -> Bool
-duringLastSec newest current = abs(newest - (timestamp current)) < 1100
-  
-sendmessage' :: Handle -> Bool -> Float -> IO()
-sendmessage' h False newDirection = return ()
-sendmessage' h True newDirection  = send h "changeDir" newDirection     
+duringLastSec newest current = abs(newest - (timestamp current)) < 1100  
 
 handleMessage :: State -> Handle -> RendererCommunication -> [Char] -> Value -> IO (State)
 handleMessage state h channel "gameIsOn" boardJson = do
