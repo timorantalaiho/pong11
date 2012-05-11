@@ -63,30 +63,6 @@ renderBoard board = do
   renderLeftPaddle board
   renderRightPaddle board
 
-  {-
-  glTranslatef (-1.5) 0 (-6.0) --Move left 1.5 Units and into the screen 6.0
-
-  -- draw a triangle (in smooth coloring mode)
-  glBegin gl_TRIANGLES
-  glColor3f    1    0  0
-  glVertex3f   0    1  0
-  glColor3f    0    1  0
-  glVertex3f   1  (-1) 0
-  glColor3f    0    0  1
-  glVertex3f (-1) (-1) 0
-  glEnd
-
-  glTranslatef 3 0 0  -- move right three units
-
-  glColor3f 0.5 0.5 1  -- set color to a blue shade
-  glBegin gl_QUADS -- start drawing a polygon (4 sided)
-  glVertex3f (-1)   1  0 -- top left
-  glVertex3f   1    1  0 -- top right
-  glVertex3f   1  (-1) 0 -- bottom right
-  glVertex3f (-1) (-1) 0 -- bottom left
-  glEnd
-
--}
   glFlush
 
 renderQuad :: IO ()
