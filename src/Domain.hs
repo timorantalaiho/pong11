@@ -27,6 +27,9 @@ rightPaddleMiddleY board = paddleMiddleY board rightY
 paddleW :: Board -> Float
 paddleW board = fromIntegral $ paddleWidth $ conf board
 
+paddleH :: Board -> Float
+paddleH board = fromIntegral $ paddleHeight $ conf board
+
 leftWallX :: Board -> Float
 leftWallX = paddleW
 

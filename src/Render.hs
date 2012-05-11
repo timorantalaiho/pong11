@@ -131,23 +131,30 @@ renderBall board = do
   glEnd
   glPopMatrix
 
-renderRightPaddle :: Board -> IO()
-renderRightPaddle board = do
-  let middleY = realToFrac $ rightPaddleMiddleY board 
+renderPaddle :: Board -> Float -> Float -> IO()
+renderPaddle board middleX middleY = do
+  let width  = paddleW board
+      height = paddleH board
   glPushMatrix
-  glTranslatef (635.0) middleY (-6.0)
-  glScalef 10 50 1.0
+  glTranslatef (realToFrac middleX) (realToFrac middleY) (-6.0)
+  glScalef (realToFrac width) (realToFrac height) 1.0
   renderQuad      
   glPopMatrix
+  glEnd
+  
+renderRightPaddle :: Board -> IO()
+renderRightPaddle board = do
+  let width   = paddleW board
+      middleY = rightPaddleMiddleY board 
+      middleX = (boardWidth board) - (width / 2)
+  renderPaddle board middleX middleY
 
 renderLeftPaddle :: Board -> IO()
 renderLeftPaddle board = do
-  let middleY = realToFrac $ leftPaddleMiddleY board 
-  glPushMatrix
-  glTranslatef (5) middleY (-6.0)
-  glScalef 10 50 1.0
-  renderQuad      
-  glPopMatrix
+  let width   = paddleW board
+      middleY = leftPaddleMiddleY board 
+      middleX = width / 2
+  renderPaddle board middleX middleY
 
 shutdown :: GLFW.WindowCloseCallback
 shutdown = do
