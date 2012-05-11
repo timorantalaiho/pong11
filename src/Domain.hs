@@ -14,7 +14,7 @@ emptyState :: State
 emptyState = State emptyBoardHistory emptyCommandHistory
 
 emptyCommandHistory :: CommandHistory
-emptyCommandHistory = take 10 $ repeat (Command 0 0)
+emptyCommandHistory = take 1000 $ repeat (Command 0 0)
 
 emptyBoardHistory :: BoardHistory
 emptyBoardHistory = take 10 $ repeat emptyBoard

@@ -34,15 +34,20 @@ send h msgType msgData = do
   hFlush h
   --putStrLn $ ">> " ++ (show json)
 
+handleMessages :: Handle -> RendererCommunication -> IO()
 handleMessages h channel = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
   handleLines emptyState h channel lines
 
+handleLines :: State -> Handle -> RendererCommunication -> [L.ByteString] -> IO()
+handleLines state h channel [] = do 
+  putStrLn "Got empty line from server."
+  return ()
 handleLines state h channel lines = do
   newstate <- handleLine state h channel $ head lines
-  putStrLn "<< state"
-  putStrLn $ show newstate
-  putStrLn "state >>"
+  --putStrLn "<< state"
+  --putStrLn $ show newstate
+  --putStrLn "state >>"
   handleLines newstate h channel $ tail lines
 
 handleLine ::  State -> Handle -> RendererCommunication -> L.ByteString -> IO (State)
@@ -52,17 +57,20 @@ handleLine state h channel msg = do
       let (msgType, msgData) = fromOk $ fromJSON json
       handleMessage state h channel msgType msgData
     Nothing -> do 
-      putStrLn "Warning, got invalid JSON message."
+      putStrLn $ "Warning, got invalid JSON message. <<" ++ (show msg) ++ ">>"
       return state
 
 sendmessage :: Handle -> CommandHistory -> Int -> Float -> Float -> IO( Maybe(Command))
 sendmessage h commandHistory lastMessageTime oldDirection newDirection = do
   let directionChanged = abs(oldDirection - newDirection) > 0.1
-      commandsInLastSec = length $ filter (\c -> abs(lastMessageTime - (timestamp c)) < 1000) commandHistory
+      commandsInLastSec = length $ filter (duringLastSec lastMessageTime) commandHistory
       doSend = directionChanged && (commandsInLastSec < 10)
-      cmd = (Command lastMessageTime newDirection)      
+      cmd = (Command lastMessageTime newDirection)   
   sendmessage' h doSend newDirection
   if doSend then return (Just(cmd)) else return (Nothing)
+  
+duringLastSec :: Int -> Command -> Bool
+duringLastSec newest current = abs(newest - (timestamp current)) < 1100
   
 sendmessage' :: Handle -> Bool -> Float -> IO()
 sendmessage' h False newDirection = return ()
@@ -76,14 +84,12 @@ handleMessage state h channel "gameIsOn" boardJson = do
   ch <- channel
   ch board
   putStrLn $ "<< " ++ (show board)
-  putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity (boardHistory state))
-  --  putStrLn $ "CURRENT TRACE:" ++ (show $ traceBallToOurPaddle (extractBallCoordinates board) (ballVelocity state) board)
   let oldDirection = (lastDirection $ head $ commandHistory $ state)
       newDirection = calculateDirection newBoardHistory
       lastMessageTime = (time board)
       oldCommandHistory = (commandHistory state)
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
-  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 10 $ command : oldCommandHistory)
+  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 1000 $ command : oldCommandHistory)
                  Nothing -> return $ State (take 5 newBoardHistory) (commandHistory state)
 
 handleMessage state h channel "gameStarted" playersJson = do
