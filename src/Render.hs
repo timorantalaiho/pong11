@@ -12,6 +12,7 @@ import Control.Monad ( forever )
 import Control.Concurrent
 import Control.Concurrent.Chan
 import Data.Data
+import Debug.Trace
 
 import Domain
 import Coordinate
@@ -67,6 +68,7 @@ renderBoard (Message hitPoints board) = do
   renderBall board
   renderLeftPaddle board
   renderRightPaddle board
+  renderHitPointPairs $ zip hitPoints (tail hitPoints)
 
   glFlush
 
@@ -119,9 +121,8 @@ renderPaddle board middleX middleY = do
   glPushMatrix
   glTranslatef (realToFrac middleX) (realToFrac middleY) (-6.0)
   glScalef (realToFrac width) (realToFrac height) 1.0
-  renderQuad      
+  renderQuad
   glPopMatrix
-  glEnd
   
 renderRightPaddle :: Board -> IO()
 renderRightPaddle board = do
@@ -136,6 +137,20 @@ renderLeftPaddle board = do
       middleY = leftPaddleMiddleY board 
       middleX = width / 2
   renderPaddle board middleX middleY
+
+renderHitPointPair :: (Coordinates, Coordinates) -> IO()
+renderHitPointPair ((Coordinates xf yf), (Coordinates xt yt)) = do
+  putStrLn "Rendering HITPOINT PAIR!"
+  glBegin gl_LINES
+  glVertex3f (realToFrac xf) (realToFrac yf) 0.0
+  glVertex3f (realToFrac xt) (realToFrac yt) 0.0
+  glEnd
+
+renderHitPointPairs :: [(Coordinates, Coordinates)] -> IO()
+renderHitPointPairs [] = Debug.Trace.trace "EMPTY HITPOINT LIST" $ return ()
+renderHitPointPairs (x:xs) = do
+  renderHitPointPair x
+  renderHitPointPairs xs
 
 shutdown :: GLFW.WindowCloseCallback
 shutdown = do
