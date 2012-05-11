@@ -46,12 +46,17 @@ nextHit (board:bs) = projectNextHitFrom (board:bs)
 
 projectNextHitFrom :: State -> Coordinates
 projectNextHitFrom (b:bs)
-  | ((Coordinate.y $ ballVelocity (b:bs)) == 0.0) = (Coordinates 0 (Domain.y $ left b))
-  | otherwise = head $ filter (\c -> isHit c b) ballMovements
-  where ballMovements = scanl(vectorFrom)(extractBallCoordinates b)(repeat (ballVelocity (b:bs)))
+  | ((Coordinate.y $ velocity) == 0.0) = (Coordinates 0 (Domain.y $ left b))
+  | otherwise = head $ filter (\c -> fst $ (isHit c velocity b)) ballMovements
+  where ballMovements = scanl(vectorFrom)(extractBallCoordinates b)(repeat (nextStep (b:bs)))
+        velocity = ballVelocity (b:bs)
 
-isHit :: Coordinates -> Board -> Bool
-isHit c b = (hitsPaddle c b) || (hitsOtherPaddle c b) || (hitsCeiling c b) || (hitsFloor c b)
+nextStep :: State -> Velocity
+nextStep s = ballVelocity s
+
+isHit :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+isHit c v b = (wouldHit, v)
+  where wouldHit = (hitsPaddle c b) || (hitsOtherPaddle c b) || (hitsCeiling c b) || (hitsFloor c b)
 
 hitsPaddle :: Coordinates -> Board -> Bool
 hitsPaddle hit board = ((x hit) <= (leftWallX board)) && (insideBoardY hit board)
