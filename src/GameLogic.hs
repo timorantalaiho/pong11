@@ -58,13 +58,16 @@ nextStep :: State -> Velocity
 nextStep s = ballVelocity s
 
 isHit :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-isHit c v b = (wouldHit, v)
+isHit c v b = (wouldHit, v')
   where possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
         wouldHit = foldl (||) False (map fst possibleHits)
         myPaddleHit = hitsPaddle c v b
         otherPaddleHit = hitsOtherPaddle c v b
         ceilingHit = hitsCeiling c v b
         floorHit = hitsFloor c v b
+        v'
+          | wouldHit = snd $ head $ filter fst possibleHits
+          | otherwise = v
 
 hitsPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 hitsPaddle hit v board = (((x hit) <= (leftWallX board)) && (insideBoardY hit board), v)
