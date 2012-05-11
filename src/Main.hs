@@ -18,11 +18,20 @@ import Log
 import Render
 
 main = do
-  (host:port:name:_) <- getArgs
+  (host:port:name:graphics:_) <- getArgs
   handle <- connectSocket host (read port :: Integer)
   send handle "join" name
-  initRenderer
-  handleMessages handle $ startRenderer
+  let renderingParams = determineRenderer graphics
+  case fst renderingParams of
+    True -> do initRenderer
+    False -> do return()
+  let renderer = snd renderingParams
+  handleMessages handle $ renderer
+
+determineRenderer :: String -> (Bool, RendererCommunication)
+determineRenderer x
+  | x == "true" = (True, startRenderer)
+  | otherwise = (False, dummyRenderer)
 
 connectSocket host port = connectTo host (PortNumber $ fromInteger port)
 
@@ -135,3 +144,5 @@ instance FromJSON (String, Value) where
 -- JSON helpers --
 fromOk (Success x) = x
 -- fromOk (Error x) =  x
+
+
