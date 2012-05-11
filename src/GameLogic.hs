@@ -66,29 +66,35 @@ hitsPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 hitsPaddle hit v board = (isHit, v')
     where isHit = (x hit) <= (leftWallX board)
           v'
-            | isHit = (Coordinates (-Coordinate.x v) (Coordinate.y v))
+            | isHit = deflectFromPaddle v
             | otherwise = v
 
 hitsOtherPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 hitsOtherPaddle hit v board = (isHit, v')
     where isHit = (x hit) >= (rightWallX board)
           v'
-            | isHit = (Coordinates (-Coordinate.x v) (Coordinate.y v))
+            | isHit = deflectFromPaddle v
             | otherwise = v
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 hitsCeiling hit v board = (isHit, v')
     where isHit = (Coordinate.y hit) <= 0.0
           v'
-            | isHit = (Coordinates (Coordinate.x v) (-Coordinate.y v))
+            | isHit = deflectFromWall v
             | otherwise = v
 
 hitsFloor :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
 hitsFloor hit v board = (isHit, v')
     where isHit = (Coordinate.y hit) >= (boardHeight board)
           v'
-            | isHit = (Coordinates (Coordinate.x v) (-Coordinate.y v))
+            | isHit = deflectFromWall v
             | otherwise = v
+
+deflectFromPaddle :: Velocity -> Velocity
+deflectFromPaddle v = Coordinates (-Coordinate.x v) (Coordinate.y v)
+
+deflectFromWall :: Velocity -> Velocity
+deflectFromWall v = Coordinates (Coordinate.x v) (-Coordinate.y v)
         
 -- Test data
 start_v2 = Coordinates 1 1
