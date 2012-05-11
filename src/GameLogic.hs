@@ -70,16 +70,32 @@ isHit c v b = (wouldHit, v')
           | otherwise = v
 
 hitsPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsPaddle hit v board = (((x hit) <= (leftWallX board)) && (insideBoardY hit board), v)
+hitsPaddle hit v board = (isHit, v')
+    where isHit = ((x hit) <= (leftWallX board)) && (insideBoardY hit board)
+          v'
+            | isHit = (Coordinates (-Coordinate.x v) (Coordinate.y v))
+            | otherwise = v
 
 hitsOtherPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOtherPaddle hit v board = (((x hit) >= (rightWallX board)) && (insideBoardY hit board), v)
+hitsOtherPaddle hit v board = (isHit, v')
+    where isHit = ((x hit) >= (rightWallX board)) && (insideBoardY hit board)
+          v'
+            | isHit = (Coordinates (-Coordinate.x v) (Coordinate.y v))
+            | otherwise = v
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsCeiling hit v board = ((Coordinate.y hit) <= 0.0 && (insideBoardX hit board), v)
+hitsCeiling hit v board = (isHit, v')
+    where isHit = (Coordinate.y hit) <= 0.0 && (insideBoardX hit board)
+          v'
+            | isHit = (Coordinates (Coordinate.x v) (-Coordinate.y v))
+            | otherwise = v
 
 hitsFloor :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsFloor hit v board = ((Coordinate.y hit) >= (boardHeight board) && (insideBoardX hit board), v)
+hitsFloor hit v board = (isHit, v')
+    where isHit = (Coordinate.y hit) >= (boardHeight board) && (insideBoardX hit board)
+          v'
+            | isHit = (Coordinates (Coordinate.x v) (-Coordinate.y v))
+            | otherwise = v
         
 insideBoardX :: Coordinates -> Board -> Bool
 insideBoardX hit board = (Coordinate.x hit) >= (leftWallX board) && (Coordinate.x hit) < (rightWallX board)
