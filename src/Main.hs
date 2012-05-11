@@ -15,12 +15,13 @@ import Domain
 import Coordinate
 import GameLogic
 import Log
+import Render
 
 main = do
   (host:port:name:_) <- getArgs
   handle <- connectSocket host (read port :: Integer)
   send handle "join" name
-  handleMessages handle
+  handleMessages handle $ startRenderer
 
 connectSocket host port = connectTo host (PortNumber $ fromInteger port)
 
@@ -32,32 +33,34 @@ send h msgType msgData = do
   hFlush h
   --putStrLn $ ">> " ++ (show json)
 
-handleMessages h = do
+handleMessages h channel = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
-  handleLines [] h lines
+  handleLines [] h channel lines
 
-handleLines state h lines = do
-  newstate <- handleLine state h $ head lines
+handleLines state h channel lines = do
+  newstate <- handleLine state h channel $ head lines
   putStrLn "<< state"
   putStrLn $ show newstate
   putStrLn "state >>"
-  handleLines newstate h $ tail lines
+  handleLines newstate h channel $ tail lines
 
-handleLine ::  State -> Handle -> L.ByteString -> IO (State)
-handleLine state h msg = do
+handleLine ::  State -> Handle -> RendererCommunication -> L.ByteString -> IO (State)
+handleLine state h channel msg = do
   case decode msg of
     Just json -> do
       let (msgType, msgData) = fromOk $ fromJSON json
-      handleMessage state h msgType msgData
+      handleMessage state h channel msgType msgData
     Nothing -> do 
       putStrLn "Warning, got invalid JSON message."
       return state
 
-handleMessage :: State -> Handle -> [Char] -> Value -> IO (State)
-handleMessage state h "gameIsOn" boardJson = do
+handleMessage :: State -> Handle -> RendererCommunication -> [Char] -> Value -> IO (State)
+handleMessage state h channel "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
       newState = board : state
-  logStatistics board    
+  logStatistics board
+  ch <- channel
+  ch board
   let direction = calculateDirection newState
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
@@ -66,15 +69,15 @@ handleMessage state h "gameIsOn" boardJson = do
   -- putStrLn $ "NEXT HIT:" ++ (show $ nextHit state)
   return $ take 5 $ newState
 
-handleMessage state h "gameStarted" playersJson = do
+handleMessage state h channel "gameStarted" playersJson = do
   logGameStart playersJson
   return []
 
-handleMessage state h "gameIsOver" winnerJson = do
+handleMessage state h channel "gameIsOver" winnerJson = do
   logGameEnd winnerJson
   return []
 
-handleMessage state h anyMessage json = do
+handleMessage state h channel anyMessage json = do
   logUnknown json
   return state
 
