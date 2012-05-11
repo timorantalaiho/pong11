@@ -1,3 +1,3 @@
 #!/bin/bash
 cabal install
-huskybot kappeli 8091 pong11++
+huskybot kappeli 8091 pong11++ nographics

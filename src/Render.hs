@@ -179,4 +179,7 @@ startRenderer = do
       GLFW.swapBuffers
   return (writeChan channel)
 
+dummyRenderer = do
+  channel <- rendererChannel
+  return (writeChan channel)
 
