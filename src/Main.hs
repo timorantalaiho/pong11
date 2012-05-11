@@ -62,6 +62,7 @@ handleMessage state h "gameIsOn" boardJson = do
   send h "changeDir" direction
   putStrLn $ "<< " ++ (show board)
   putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity state)
+  putStrLn $ "NEXT HIT:" ++ (show $ nextHit state)
   return $ take 5 $ newState
 
 handleMessage state h "gameStarted" playersJson = do
