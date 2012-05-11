@@ -10,7 +10,8 @@ calculateDirection history =
   chooseDirection current target board
   where board = head history
         current = leftPaddleMiddleY board
-        target = targetY history
+        targetOffset = negate $ (ballAngle history) * (paddleH board) / 2.0
+        target = trace ("offset=" ++ show targetOffset) $ targetY history
 
 ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
@@ -20,6 +21,10 @@ ballVelocity (s1:s2:xs) =
   where newCoordinates = extractBallCoordinates s1
         oldCoordinates = extractBallCoordinates s2
 
+ballAngle :: BoardHistory -> Float
+ballAngle history = (Coordinate.y v) / (Coordinate.x v)
+  where v = ballVelocity history
+
 vectorTo :: Coordinates -> Coordinates -> Coordinates
 vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinate.y c1) - (Coordinate.y c2))
 
@@ -28,12 +33,10 @@ vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordin
 
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY targetY board
-  | difference < negHalfPaddleH = (-1.0, (snd targetY))
-  | difference > posHalfPaddleH = (1.0, (snd targetY))
-  | otherwise = (0.0, (snd targetY))
+  | difference < 0.0 = (-1.0, snd targetY)
+  | difference > 0.0 = ( 1.0, snd targetY)
+  | otherwise = (0.0, snd targetY)
   where difference = (fst targetY) - currentY
-        posHalfPaddleH = (paddleH board) / 2.0
-        negHalfPaddleH = negate posHalfPaddleH
 
 targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
