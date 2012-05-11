@@ -6,7 +6,7 @@ import Debug.Trace
 
 calculateDirection :: BoardHistory -> Float
 calculateDirection history =
-  chooseDirection current target
+  chooseDirection current target board
   where board = head history
         current = leftPaddleMiddleY board
         target = targetY history
@@ -25,12 +25,14 @@ vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinat
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
 
-chooseDirection :: Float -> Float -> Float
-chooseDirection currentY targetY
-  | difference < 0.0 = -1.0
-  | difference > 0.0 = 1.0
+chooseDirection :: Float -> Float -> Board -> Float
+chooseDirection currentY targetY board
+  | difference < negHalfPaddleH = -1.0
+  | difference > posHalfPaddleH =  1.0
   | otherwise = 0.0
   where difference = targetY - currentY
+        posHalfPaddleH = (paddleH board) / 2.0
+        negHalfPaddleH = negate posHalfPaddleH
 
 targetY :: BoardHistory -> Float
 targetY (x:xs) =
