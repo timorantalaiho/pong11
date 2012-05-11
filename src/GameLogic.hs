@@ -65,43 +65,43 @@ ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
-hitsOurPaddle p (Coordinates vx vy) board
-    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Debug.Trace.trace "LAAMA!" $ Just (v', p')
+hitsOurPaddle p v board
+    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
     | otherwise = Nothing
-    where timeToInpact = ((leftWallX board) - (Coordinate.x p)) / vx
-          yPos = (Coordinate.y p) + (vy * timeToInpact)
+    where timeToInpact = ((leftWallX board) - (Coordinate.x p)) / (Coordinate.x v)
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
           p' = Coordinates (leftWallX board) yPos
-          v' = deflectFromPaddle (Coordinates vx vy)
+          v' = deflectFromPaddle v
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
-hitsOpponentPaddle p (Coordinates vx vy) board
+hitsOpponentPaddle p v board
     | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
     | otherwise = Nothing
-    where timeToInpact = ((rightWallX board) - (Coordinate.x p)) / vx
-          yPos = (Coordinate.y p) + (vy * timeToInpact)
+    where timeToInpact = ((rightWallX board) - (Coordinate.x p)) / (Coordinate.x v)
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
           p' = Coordinates (rightWallX board) yPos
-          v' = deflectFromPaddle (Coordinates vx vy)
+          v' = deflectFromPaddle v
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p (Coordinates x 0.0) board = Nothing
-hitsCeiling p (Coordinates vx vy) board
+hitsCeiling p v board
   | timeToInpact >= 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
   | otherwise = Nothing
-  where timeToInpact = (0.0 - (Coordinate.y p)) / vy
-        xPos = (Coordinate.x p) + (vx * timeToInpact)
+  where timeToInpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
         p' = Coordinates xPos 0.0
-        v' = deflectFromWall (Coordinates vx vy)
+        v' = deflectFromWall v
 
 hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsFloor p (Coordinates x 0.0) board = Nothing
-hitsFloor p (Coordinates vx vy) board
+hitsFloor p v board
   | timeToInpact >= 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
   | otherwise = Nothing
-  where timeToInpact = ((boardHeight board) - (Coordinate.y p)) / vy
-        xPos = (Coordinate.x p) + (vx * timeToInpact)
+  where timeToInpact = ((boardHeight board) - (Coordinate.y p)) / (Coordinate.y v)
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
         p' = Coordinates xPos (boardHeight board)
-        v' = deflectFromWall (Coordinates vx vy)
+        v' = deflectFromWall v
 
 deflectFromPaddle :: Velocity -> Velocity
 deflectFromPaddle v = Coordinates (-Coordinate.x v) (Coordinate.y v)
