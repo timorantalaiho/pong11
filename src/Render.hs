@@ -94,7 +94,7 @@ renderBall :: Board -> IO()
 renderBall board = do
   let ballx = realToFrac $ Coordinate.x $ extractBallCoordinates board
       bally = realToFrac $ Coordinate.y $ extractBallCoordinates board
-      radius = 5.0
+      radius = realToFrac $ ballR board
   glPushMatrix
   glTranslatef ballx bally (-6.0)
   glScalef radius radius 1.0

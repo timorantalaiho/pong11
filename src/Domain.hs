@@ -45,3 +45,5 @@ boardHeight board = fromIntegral $ maxHeight $ conf board
 extractBallCoordinates :: Board -> Coordinates
 extractBallCoordinates board = pos $ ball board
 
+ballR :: Board -> Int 
+ballR board = ballRadius $ conf $ board 
