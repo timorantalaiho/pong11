@@ -28,6 +28,7 @@ connectSocket host port = connectTo host (PortNumber $ fromInteger port)
 
 send :: ToJSON a => Handle -> String -> a -> IO ()
 send h msgType msgData = do
+  putStrLn "SENDING MSG"
   let json = encode $ object ["msgType" .= msgType, "data" .= msgData]
   L.hPut h $ json
   hPutChar h '\n'
@@ -36,7 +37,7 @@ send h msgType msgData = do
 
 handleMessages h channel = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
-  handleLines [] h channel lines
+  handleLines emptyState h channel lines
 
 handleLines state h channel lines = do
   newstate <- handleLine state h channel $ head lines
@@ -55,27 +56,32 @@ handleLine state h channel msg = do
       putStrLn "Warning, got invalid JSON message."
       return state
 
+sendmessage :: Handle -> Float -> Float -> IO()
+sendmessage h oldDirection newDirection 
+  | abs(oldDirection - newDirection) > 0.1 = send h "changeDir" newDirection
+  | otherwise = putStrLn "nop"
+
 handleMessage :: State -> Handle -> RendererCommunication -> [Char] -> Value -> IO (State)
 handleMessage state h channel "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
-      newState = board : state
+      newHistory = board : (boardHistory state)
   logStatistics board
   ch <- channel
   ch board
-  let direction = calculateDirection newState
-  send h "changeDir" direction
+  let newDirection = calculateDirection newHistory
+  sendmessage h (lastDirection state) newDirection
   putStrLn $ "<< " ++ (show board)
-  putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity state)
+  putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity (boardHistory state))
 --  putStrLn $ "CURRENT TRACE:" ++ (show $ traceBallToOurPaddle (extractBallCoordinates board) (ballVelocity state) board)
-  return $ take 5 $ newState
+  return $ State (take 5 newHistory) newDirection
 
 handleMessage state h channel "gameStarted" playersJson = do
   logGameStart playersJson
-  return []
+  return emptyState
 
 handleMessage state h channel "gameIsOver" winnerJson = do
   logGameEnd winnerJson
-  return []
+  return emptyState
 
 handleMessage state h channel anyMessage json = do
   logUnknown json

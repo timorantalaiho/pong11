@@ -4,14 +4,14 @@ import Domain
 import Coordinate
 import Debug.Trace
 
-calculateDirection :: State -> Float
-calculateDirection state =
+calculateDirection :: BoardHistory -> Float
+calculateDirection history =
   chooseDirection current target
-  where board = head state
+  where board = head history
         current = leftPaddleMiddleY board
-        target = targetY state
+        target = targetY history
 
-ballVelocity :: State -> Velocity
+ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
 ballVelocity [x] = Coordinates 0.0 0.0
 ballVelocity (s1:s2:xs) =
@@ -32,12 +32,14 @@ chooseDirection currentY targetY
   | otherwise = 0.0
   where difference = targetY - currentY
 
-targetY :: State -> Float
-targetY state =
+targetY :: BoardHistory -> Float
+targetY (x:xs) =
     Coordinate.y $ traceBallToOurPaddle p v b
-  where b = head state
+  where b = x
         p = extractBallCoordinates b
-        v = ballVelocity state
+        v = ballVelocity (x:xs)
+targetY [] = 0.0
+
 
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
 traceBallToOurPaddle p v board
