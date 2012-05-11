@@ -94,14 +94,15 @@ handleMessage state h channel "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
       newBoardHistory = board : (boardHistory state)
   logStatistics board
-  ch <- channel
-  ch board
+  rendererCommunication <- channel
   putStrLn $ "<< " ++ (show board)
   let oldDirection = (lastDirection $ head $ commandHistory $ state)
-      newDirection = calculateDirection newBoardHistory
+      directionResults = calculateDirection newBoardHistory
+      newDirection = fst directionResults
       lastMessageTime = (time board)
       oldCommandHistory = (commandHistory state)
       oldMissiles = (missiles state)
+  rendererCommunication (Message (snd directionResults) board)      
   newmissiles <- sendmissile h board oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
   case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles

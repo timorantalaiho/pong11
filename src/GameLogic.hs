@@ -2,9 +2,10 @@ module GameLogic where
 
 import Domain
 import Coordinate
+import Data.Maybe
 import Debug.Trace
 
-calculateDirection :: BoardHistory -> Float
+calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
   chooseDirection current target board
   where board = head history
@@ -25,74 +26,83 @@ vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinat
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
 
-chooseDirection :: Float -> Float -> Board -> Float
+chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY targetY board
-  | difference < negHalfPaddleH = -1.0
-  | difference > posHalfPaddleH =  1.0
-  | otherwise = 0.0
-  where difference = targetY - currentY
+  | difference < negHalfPaddleH = (-1.0, (snd targetY))
+  | difference > posHalfPaddleH = (1.0, (snd targetY))
+  | otherwise = (0.0, (snd targetY))
+  where difference = (fst targetY) - currentY
         posHalfPaddleH = (paddleH board) / 2.0
         negHalfPaddleH = negate posHalfPaddleH
 
-targetY :: BoardHistory -> Float
+targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
-    Coordinate.y $ traceBallToOurPaddle p v b
+  ((Coordinate.y $ head hitPoints), hitPoints)
   where b = x
         p = extractBallCoordinates b
         v = ballVelocity (x:xs)
-targetY [] = 0.0
+        hitPoints = traceBallToOurPaddle p v b []
+targetY [] = (0.0, [])
 
 
-traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
-traceBallToOurPaddle p v board
-    | ballStopped v = p
-    | fst ourPaddleHit = p'
-    | otherwise = traceBallToOurPaddle p' v' board
-    where p' = advanceBall p v
-          possibleHits = [ourPaddleHit, opponentPaddleHit, ceilingHit, floorHit]
-          wouldHit = foldl (||) False (map fst possibleHits)
-          ourPaddleHit = hitsOurPaddle p' v board
-          opponentPaddleHit = hitsOpponentPaddle p' v board
-          ceilingHit = hitsCeiling p' v board
-          floorHit = hitsFloor p' v board
-          v'
-           | wouldHit = snd $ head $ filter fst possibleHits
-           | otherwise = v
-
-advanceBall :: Coordinates -> Velocity -> Coordinates
-advanceBall p v =
-    vectorFrom p v
+traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
+traceBallToOurPaddle p v board hitPoints
+    | ballStopped v = p : hitPoints
+    | isJust ourPaddleHit = p' : hitPoints
+    | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
+    where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
+          possibleHits = map (\ht -> ht p v board) hitTests
+          hit = filter isJust possibleHits
+          ourPaddleHit = head possibleHits
+          (v',p') = case hit of
+              [Just (nv,np)] -> (nv,np)
+              _ -> (v,p)
 
 ballStopped :: Velocity -> Bool
 ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
-hitsOurPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOurPaddle hit v board = (isHit, v')
-    where isHit = (x hit) <= (leftWallX board)
-          v'
-            | isHit = deflectFromPaddle v
-            | otherwise = v
+hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
+hitsOurPaddle p v board
+    | timeToInpact > 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
+    | otherwise = Nothing
+    where timeToInpact = (left - (Coordinate.x p)) / (Coordinate.x v)
+          left = leftWallX board
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
+          p' = Coordinates left yPos
+          v' = deflectFromPaddle v
 
-hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOpponentPaddle hit v board = (isHit, v')
-    where isHit = (x hit) >= (rightWallX board)
-          v'
-            | isHit = deflectFromPaddle v
-            | otherwise = v
+hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
+hitsOpponentPaddle p v board
+    | timeToInpact > 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
+    | otherwise = Nothing
+    where timeToInpact = (right - (Coordinate.x p)) / (Coordinate.x v)
+          right = rightWallX board
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
+          p' = Coordinates right yPos
+          v' = deflectFromPaddle v
 
-hitsCeiling :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsCeiling hit v board = (isHit, v')
-    where isHit = (Coordinate.y hit) <= 0.0
-          v'
-            | isHit = deflectFromWall v
-            | otherwise = v
+hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsCeiling p (Coordinates x 0.0) board = Nothing
+hitsCeiling p v board
+  | timeToInpact > 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
+  | otherwise = Nothing
+  where timeToInpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
+        p' = Coordinates xPos 0.0
+        v' = deflectFromWall v
 
-hitsFloor :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsFloor hit v board = (isHit, v')
-    where isHit = (Coordinate.y hit) >= (boardHeight board)
-          v'
-            | isHit = deflectFromWall v
-            | otherwise = v
+hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsFloor p (Coordinates x 0.0) board = Nothing
+hitsFloor p v board
+  | timeToInpact > 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
+  | otherwise = Nothing
+  where timeToInpact = (height - (Coordinate.y p)) / (Coordinate.y v)
+        height = boardHeight board
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
+        p' = Coordinates xPos height
+        v' = deflectFromWall v
 
 deflectFromPaddle :: Velocity -> Velocity
 deflectFromPaddle v = Coordinates (-Coordinate.x v) (Coordinate.y v)
