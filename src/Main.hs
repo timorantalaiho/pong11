@@ -66,9 +66,10 @@ handleMessage state h channel "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
       newHistory = board : (boardHistory state)
   logStatistics board
+  let directionResults = calculateDirection newHistory
   ch <- channel
-  ch board
-  let newDirection = fst $ calculateDirection newHistory
+  ch (Message (snd directionResults) board)
+  let newDirection = fst directionResults
   sendmessage h (lastDirection state) newDirection
   putStrLn $ "<< " ++ (show board)
   putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity (boardHistory state))

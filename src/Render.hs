@@ -19,7 +19,7 @@ import Coordinate
 -- TODO: Remove Data and Typeable if not necessary
 data Message = Message { hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
 
-type RendererCommunication = IO (Board -> IO ())
+type RendererCommunication = IO (Message -> IO ())
 
 initGL :: IO ()
 initGL = do
@@ -52,8 +52,8 @@ clearScene = do
   glLoadIdentity  -- reset view
   glFlush
 
-renderBoard :: Board -> IO ()
-renderBoard board = do
+renderBoard :: Message -> IO ()
+renderBoard (Message hitPoints board) = do
   -- clear the screen and the depth buffer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
                          .|. gl_DEPTH_BUFFER_BIT
@@ -172,7 +172,7 @@ initRenderer = do
      GLFW.setWindowCloseCallback shutdown
      initGL
 
-rendererChannel :: IO (Chan (Board))
+rendererChannel :: IO (Chan (Message))
 rendererChannel = newChan
 
 startRenderer :: RendererCommunication
