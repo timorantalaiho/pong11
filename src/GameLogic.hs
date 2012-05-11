@@ -39,6 +39,23 @@ targetY state = Coordinate.y leftHit
         hitsPaddle hit = (x hit) == 0
         leftHit = head $ filter hitsPaddle hits
 
+traceBall :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
+traceBall p v board track = traceBall p' v' board (p' : track)
+    where p' = advanceBall p v
+          possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
+          wouldHit = foldl (||) False (map fst possibleHits)
+          myPaddleHit = hitsPaddle p v board
+          otherPaddleHit = hitsOtherPaddle p v board
+          ceilingHit = hitsCeiling p v board
+          floorHit = hitsFloor p v board
+          v'
+           | wouldHit = snd $ head $ filter fst possibleHits
+           | otherwise = v
+
+advanceBall :: Coordinates -> Velocity -> Coordinates
+advanceBall p v =
+    vectorFrom p v
+
 nextHit :: State -> Coordinates
 nextHit [] = dummyNextHit []
 nextHit (b:[]) = dummyNextHit []
