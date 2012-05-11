@@ -142,7 +142,7 @@ renderRightPaddle board = do
 
 renderLeftPaddle :: Board -> IO()
 renderLeftPaddle board = do
-  let middleY = realToFrac $ paddleMiddleY board 
+  let middleY = realToFrac $ leftPaddleMiddleY board 
   glPushMatrix
   glTranslatef (5) middleY (-6.0)
   glScalef 10 50 1.0

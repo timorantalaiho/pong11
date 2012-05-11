@@ -12,15 +12,17 @@ data Conf = Conf { maxWidth :: Int, maxHeight :: Int, paddleHeight :: Int, paddl
 data Board = Board { time :: Int, left :: Paddle, right :: Paddle, ball :: Ball, conf :: Conf } deriving (Data, Typeable, Show)
 type Velocity = Coordinates
 
-paddleMiddleY :: Board -> Float
-paddleMiddleY board =
-  paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
-  where paddleY = Domain.y $ left board
+paddleMiddleY :: Board -> Float -> Float
+paddleMiddleY board paddleY = paddleY + (height / 2.0)
+  where height = fromIntegral $ paddleHeight $ conf $ board
+
+leftPaddleMiddleY :: Board -> Float
+leftPaddleMiddleY board = paddleMiddleY board leftY  
+  where leftY = Domain.y $ left board
 
 rightPaddleMiddleY :: Board -> Float
-rightPaddleMiddleY board =
-  paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
-  where paddleY = Domain.y $ right board
+rightPaddleMiddleY board = paddleMiddleY board rightY  
+  where rightY = Domain.y $ right board
 
 paddleW :: Board -> Float
 paddleW board = fromIntegral $ paddleWidth $ conf board

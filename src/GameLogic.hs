@@ -7,7 +7,7 @@ calculateDirection :: State -> Float
 calculateDirection state =
   chooseDirection current target
   where board = head state
-        current = paddleMiddleY board
+        current = leftPaddleMiddleY board
         target = targetY state
 
 ballVelocity :: State -> Velocity
