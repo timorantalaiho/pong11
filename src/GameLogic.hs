@@ -55,13 +55,13 @@ hitsPaddle :: Coordinates -> Board -> Bool
 hitsPaddle hit board = (x hit) <= (leftWallX board)
 
 hitsOtherPaddle :: Coordinates -> Board -> Bool
-hitsOtherPaddle hit board = (x hit) >= ((fromIntegral $ maxWidth $ conf board) - (fromIntegral $ paddleWidth $ conf board))
+hitsOtherPaddle hit board = (x hit) >= (rightWallX board)
 
 hitsCeiling :: Coordinates -> Board -> Bool
 hitsCeiling hit board = (Coordinate.y hit) <= 0.0
 
 hitsFloor :: Coordinates -> Board -> Bool
-hitsFloor hit board = (Coordinate.y hit) >= (fromIntegral $ maxHeight $ conf board)
+hitsFloor hit board = (Coordinate.y hit) >= (boardHeight board)
         
 nextHits :: State -> [Coordinates]
 nextHits state = [dummyNextHit state]

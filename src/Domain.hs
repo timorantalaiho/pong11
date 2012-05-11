@@ -17,8 +17,20 @@ paddleMiddleY board =
   paddleY + ((fromIntegral $ paddleHeight $ conf board) / 2.0)
   where paddleY = Domain.y $ left board
 
+paddleW :: Board -> Float
+paddleW board = fromIntegral $ paddleWidth $ conf board
+
 leftWallX :: Board -> Float
-leftWallX board = fromIntegral $ paddleWidth $ conf $ board
+leftWallX = paddleW
+
+rightWallX :: Board -> Float
+rightWallX board = (boardWidth board) - (paddleW board)
+
+boardWidth :: Board -> Float
+boardWidth board = fromIntegral $ maxWidth $ conf board
+
+boardHeight :: Board -> Float
+boardHeight board = fromIntegral $ maxHeight $ conf board
 
 extractBallCoordinates :: Board -> Coordinates
 extractBallCoordinates board = pos $ ball board
