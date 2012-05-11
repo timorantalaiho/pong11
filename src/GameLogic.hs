@@ -64,7 +64,7 @@ ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p v board
-    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
+    | timeToInpact > 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
     | otherwise = Nothing
     where timeToInpact = (left - (Coordinate.x p)) / (Coordinate.x v)
           left = leftWallX board
@@ -75,7 +75,7 @@ hitsOurPaddle p v board
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOpponentPaddle p v board
-    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
+    | timeToInpact > 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
     | otherwise = Nothing
     where timeToInpact = (right - (Coordinate.x p)) / (Coordinate.x v)
           right = rightWallX board
@@ -86,7 +86,7 @@ hitsOpponentPaddle p v board
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p (Coordinates x 0.0) board = Nothing
 hitsCeiling p v board
-  | timeToInpact >= 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
+  | timeToInpact > 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
   | otherwise = Nothing
   where timeToInpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
         xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
@@ -96,7 +96,7 @@ hitsCeiling p v board
 hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsFloor p (Coordinates x 0.0) board = Nothing
 hitsFloor p v board
-  | timeToInpact >= 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
+  | timeToInpact > 0.0 && xPos >= (leftWallX board) && xPos <= (rightWallX board) = Just (v', p')
   | otherwise = Nothing
   where timeToInpact = (height - (Coordinate.y p)) / (Coordinate.y v)
         height = boardHeight board
