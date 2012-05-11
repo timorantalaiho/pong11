@@ -68,7 +68,7 @@ handleMessage state h channel "gameIsOn" boardJson = do
   logStatistics board
   ch <- channel
   ch board
-  let newDirection = calculateDirection newHistory
+  let newDirection = fst $ calculateDirection newHistory
   sendmessage h (lastDirection state) newDirection
   putStrLn $ "<< " ++ (show board)
   putStrLn $ "BALL VELOCITY:" ++ (show $ ballVelocity (boardHistory state))

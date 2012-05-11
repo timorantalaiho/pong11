@@ -5,7 +5,7 @@ import Coordinate
 import Data.Maybe
 import Debug.Trace
 
-calculateDirection :: BoardHistory -> Float
+calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
   chooseDirection current target board
   where board = head history
@@ -26,29 +26,30 @@ vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinat
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
 
-chooseDirection :: Float -> Float -> Board -> Float
+chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY targetY board
-  | difference < negHalfPaddleH = -1.0
-  | difference > posHalfPaddleH =  1.0
-  | otherwise = 0.0
-  where difference = targetY - currentY
+  | difference < negHalfPaddleH = (-1.0, (snd targetY))
+  | difference > posHalfPaddleH = (1.0, (snd targetY))
+  | otherwise = (0.0, (snd targetY))
+  where difference = (fst targetY) - currentY
         posHalfPaddleH = (paddleH board) / 2.0
         negHalfPaddleH = negate posHalfPaddleH
 
-targetY :: BoardHistory -> Float
+targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
-    Coordinate.y $ traceBallToOurPaddle p v b
+  ((Coordinate.y $ head hitPoints), hitPoints)
   where b = x
         p = extractBallCoordinates b
         v = ballVelocity (x:xs)
-targetY [] = 0.0
+        hitPoints = traceBallToOurPaddle p v b []
+targetY [] = (0.0, [])
 
 
-traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
-traceBallToOurPaddle p v board
-    | ballStopped v = p
-    | isJust ourPaddleHit = p'
-    | otherwise = traceBallToOurPaddle p' v' board
+traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
+traceBallToOurPaddle p v board hitPoints
+    | ballStopped v = p : hitPoints
+    | isJust ourPaddleHit = p' : hitPoints
+    | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
     where possibleHits = [ourPaddleHit, opponentPaddleHit, ceilingHit, floorHit]
           hit = filter isJust possibleHits
           ourPaddleHit = hitsOurPaddle p v board
@@ -65,7 +66,7 @@ ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p (Coordinates vx vy) board
-    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Just (v', p')
+    | timeToInpact >= 0.0 && yPos >= 0.0 && yPos <= (boardHeight board) = Debug.Trace.trace "LAAMA!" $ Just (v', p')
     | otherwise = Nothing
     where timeToInpact = ((leftWallX board) - (Coordinate.x p)) / vx
           yPos = (Coordinate.y p) + (vy * timeToInpact)
