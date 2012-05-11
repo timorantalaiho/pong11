@@ -71,9 +71,16 @@ sendmessage h commandHistory lastMessageTime oldDirection newDirection = do
       return (Just(Command lastMessageTime newDirection))                   
     False -> do 
       return (Nothing)
-  
-duringLastSec :: Int -> Command -> Bool
-duringLastSec newest current = abs(newest - (timestamp current)) < 1100  
+  where 
+    duringLastSec :: Int -> Command -> Bool
+    duringLastSec newest current = abs(newest - (timestamp current)) < 1100  
+    
+sendmissile :: Handle -> Missiles -> IO( Missiles)
+sendmissile h [] = return ([])
+sendmissile h (x:xs) = do
+  putStrLn $ "LAUCHED MISSILE" ++ (show x)
+  send h "launchMissile" x
+  return (xs)
 
 handleMessage :: State -> Handle -> RendererCommunication -> [Char] -> Value -> IO (State)
 handleMessage state h channel "gameIsOn" boardJson = do
@@ -87,13 +94,16 @@ handleMessage state h channel "gameIsOn" boardJson = do
       newDirection = calculateDirection newBoardHistory
       lastMessageTime = (time board)
       oldCommandHistory = (commandHistory state)
+      oldMissiles = (missiles state)
+  newmissiles <- sendmissile h oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
-  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 1000 $ command : oldCommandHistory) (missilesReady state)
-                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) (missilesReady state)
+  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles
+                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles
 
 handleMessage state h channel "missileReady" missilesJson = do
-  logMissilesReady missilesJson
-  return (State (boardHistory state) (commandHistory state) True)
+  let missile = fromOk $ GJ.fromJSON missilesJson :: Missile  
+  logMissilesReady missile
+  return (State (boardHistory state) (commandHistory state) (missile : (missiles state)))
 
 handleMessage state h channel "gameStarted" playersJson = do
   logGameStart playersJson
