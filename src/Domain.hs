@@ -8,10 +8,10 @@ import Coordinate
 type BoardHistory = [Board]
 type CommandHistory = [Command]
 data Command = Command { timestamp :: Int, lastDirection :: Float } deriving (Data, Typeable, Show)
-data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory } deriving (Data, Typeable, Show)
+data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory, missilesReady :: Bool } deriving (Data, Typeable, Show)
 
 emptyState :: State
-emptyState = State emptyBoardHistory emptyCommandHistory
+emptyState = State emptyBoardHistory emptyCommandHistory False
 
 emptyCommandHistory :: CommandHistory
 emptyCommandHistory = take 1000 $ repeat (Command 0 0)

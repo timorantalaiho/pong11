@@ -14,6 +14,10 @@ logStatistics board = do
       distanceY = ballY - paddleMidY
   writeLogLine $ show $ (paddleMidY, ballY, distanceY, distanceX)
 
+logMissilesReady json = do 
+  let msg = "<< MISSILES READY: " ++ (show json)
+  logLine msg
+
 logGameStart json = do 
   let msg = "<< GAME STARTED WITH: " ++ (show json)
   logLine msg

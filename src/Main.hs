@@ -88,8 +88,12 @@ handleMessage state h channel "gameIsOn" boardJson = do
       lastMessageTime = (time board)
       oldCommandHistory = (commandHistory state)
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
-  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 1000 $ command : oldCommandHistory)
-                 Nothing -> return $ State (take 5 newBoardHistory) (commandHistory state)
+  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 1000 $ command : oldCommandHistory) (missilesReady state)
+                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) (missilesReady state)
+
+handleMessage state h channel "missileReady" missilesJson = do
+  logMissilesReady missilesJson
+  return (State (boardHistory state) (commandHistory state) True)
 
 handleMessage state h channel "gameStarted" playersJson = do
   logGameStart playersJson
