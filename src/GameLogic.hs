@@ -54,16 +54,22 @@ isHit :: Coordinates -> Board -> Bool
 isHit c b = (hitsPaddle c b) || (hitsOtherPaddle c b) || (hitsCeiling c b) || (hitsFloor c b)
 
 hitsPaddle :: Coordinates -> Board -> Bool
-hitsPaddle hit board = (x hit) <= (leftWallX board)
+hitsPaddle hit board = ((x hit) <= (leftWallX board)) && (insideBoardY hit board)
 
 hitsOtherPaddle :: Coordinates -> Board -> Bool
-hitsOtherPaddle hit board = (x hit) >= (rightWallX board)
+hitsOtherPaddle hit board = ((x hit) >= (rightWallX board)) && (insideBoardY hit board)
 
 hitsCeiling :: Coordinates -> Board -> Bool
-hitsCeiling hit board = (Coordinate.y hit) <= 0.0
+hitsCeiling hit board = (Coordinate.y hit) <= 0.0 && (insideBoardX hit board)
 
 hitsFloor :: Coordinates -> Board -> Bool
-hitsFloor hit board = (Coordinate.y hit) >= (boardHeight board)
+hitsFloor hit board = (Coordinate.y hit) >= (boardHeight board) && (insideBoardX hit board)
+        
+insideBoardX :: Coordinates -> Board -> Bool
+insideBoardX hit board = (Coordinate.x hit) >= (leftWallX board) && (Coordinate.x hit) < (rightWallX board)
+
+insideBoardY :: Coordinates -> Board -> Bool        
+insideBoardY hit board = (Coordinate.y hit) >= 0.0 && (Coordinate.y hit) < (boardHeight board)
         
 nextHits :: State -> [Coordinates]
 nextHits state = [dummyNextHit state]
