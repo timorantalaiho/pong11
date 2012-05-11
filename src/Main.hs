@@ -21,6 +21,7 @@ main = do
   (host:port:name:_) <- getArgs
   handle <- connectSocket host (read port :: Integer)
   send handle "join" name
+  initRenderer
   handleMessages handle $ startRenderer
 
 connectSocket host port = connectTo host (PortNumber $ fromInteger port)
