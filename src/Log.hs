@@ -22,8 +22,8 @@ logGameEnd json = do
   let msg = "<< AND THE GAME WINNER IS: " ++ (show json)
   logLine msg
 
-logUnknown json = do
-  let msg = "<< UNKNOWN MESSAGE: " ++ (show json)
+logUnknown mType json = do
+  let msg = "<< UNKNOWN MESSAGE: msgType '" ++ (show mType) ++ "' : " ++ (show json)
   logLine msg
   
 logLine msg = do

@@ -84,7 +84,7 @@ handleMessage state h channel "gameIsOver" winnerJson = do
   return emptyState
 
 handleMessage state h channel anyMessage json = do
-  logUnknown json
+  logUnknown anyMessage json
   return state
 
 instance FromJSON (String, Value) where
