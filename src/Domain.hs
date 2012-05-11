@@ -6,10 +6,20 @@ import Data.Typeable
 import Coordinate
 
 type BoardHistory = [Board]
-data State = State { boardHistory :: BoardHistory, lastDirection :: Float } deriving (Data, Typeable, Show)
+type CommandHistory = [Command]
+data Command = Command { timestamp :: Int, lastDirection :: Float } deriving (Data, Typeable, Show)
+data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory } deriving (Data, Typeable, Show)
 
 emptyState :: State
-emptyState = State [] 0.0
+emptyState = State emptyBoardHistory emptyCommandHistory
+
+emptyCommandHistory :: CommandHistory
+emptyCommandHistory = take 10 $ repeat (Command 0 0)
+
+emptyBoardHistory :: BoardHistory
+emptyBoardHistory = take 10 $ repeat emptyBoard
+
+emptyBoard = Board 0 (Paddle 0 "") (Paddle 0 "") (Ball (Coordinates 30 40)) (Conf 640 480  50 10 5 15)  
 
 data Paddle = Paddle { y :: Float, playerName :: String } deriving (Data, Typeable, Show)
 data Ball = Ball { pos :: Coordinates } deriving (Data, Typeable, Show)
