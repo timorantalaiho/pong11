@@ -89,6 +89,7 @@ startRenderer :: RendererCommunication
 startRenderer = do
   channel <- rendererChannel
   forkIO $ do
+    initRenderer
     forever $ do
       readChan channel >>= print
   return (writeChan channel)
