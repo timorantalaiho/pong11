@@ -2,6 +2,7 @@ module GameLogic where
 
 import Domain
 import Coordinate
+import Debug.Trace
 
 calculateDirection :: State -> Float
 calculateDirection state =
@@ -34,13 +35,17 @@ chooseDirection currentY targetY
 targetY :: State -> Float
 --targetY state = Coordinate.y $ Domain.pos $ Domain.ball board
 --  where board = head state  
-targetY state = Coordinate.y leftHit
-  where hits = nextHits state
-        hitsPaddle hit = (x hit) == 0
-        leftHit = head $ filter hitsPaddle hits
+targetY state =
+    Coordinate.y $ traceBallToOurPaddle p v b
+  where b = head state
+        p = extractBallCoordinates b
+        v = ballVelocity state
 
-traceBall :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
-traceBall p v board track = traceBall p' v' board (p' : track)
+traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
+traceBallToOurPaddle p v board
+    | ballStopped v = p
+    | fst myPaddleHit = p'
+    | otherwise = traceBallToOurPaddle p' v' board
     where p' = advanceBall p v
           possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
           wouldHit = foldl (||) False (map fst possibleHits)
