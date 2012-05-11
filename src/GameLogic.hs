@@ -46,10 +46,13 @@ nextHit (board:bs) = projectNextHitFrom (board:bs)
 
 projectNextHitFrom :: State -> Coordinates
 projectNextHitFrom (b:bs)
-  | ((Coordinate.y $ velocity) == 0.0) = (Coordinates 0 (Domain.y $ left b))
+  | ballStopped velocity = (Coordinates 0 (Coordinate.y $ extractBallCoordinates b))
   | otherwise = head $ filter (\c -> fst $ (isHit c velocity b)) ballMovements
   where ballMovements = scanl(vectorFrom)(extractBallCoordinates b)(repeat (nextStep (b:bs)))
         velocity = ballVelocity (b:bs)
+
+ballStopped :: Velocity -> Bool
+ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
 nextStep :: State -> Velocity
 nextStep s = ballVelocity s
