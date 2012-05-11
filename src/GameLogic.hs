@@ -42,13 +42,13 @@ targetY state =
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> Coordinates
 traceBallToOurPaddle p v board
     | ballStopped v = p
-    | fst myPaddleHit = p'
+    | fst ourPaddleHit = p'
     | otherwise = traceBallToOurPaddle p' v' board
     where p' = advanceBall p v
-          possibleHits = [myPaddleHit, otherPaddleHit, ceilingHit, floorHit]
+          possibleHits = [ourPaddleHit, opponentPaddleHit, ceilingHit, floorHit]
           wouldHit = foldl (||) False (map fst possibleHits)
-          myPaddleHit = hitsPaddle p' v board
-          otherPaddleHit = hitsOtherPaddle p' v board
+          ourPaddleHit = hitsOurPaddle p' v board
+          opponentPaddleHit = hitsOpponentPaddle p' v board
           ceilingHit = hitsCeiling p' v board
           floorHit = hitsFloor p' v board
           v'
@@ -62,15 +62,15 @@ advanceBall p v =
 ballStopped :: Velocity -> Bool
 ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
-hitsPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsPaddle hit v board = (isHit, v')
+hitsOurPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsOurPaddle hit v board = (isHit, v')
     where isHit = (x hit) <= (leftWallX board)
           v'
             | isHit = deflectFromPaddle v
             | otherwise = v
 
-hitsOtherPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
-hitsOtherPaddle hit v board = (isHit, v')
+hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> (Bool, Velocity)
+hitsOpponentPaddle hit v board = (isHit, v')
     where isHit = (x hit) >= (rightWallX board)
           v'
             | isHit = deflectFromPaddle v
