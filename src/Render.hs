@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Render where
 
 -- import Graphics.UI.GLUT
@@ -10,9 +11,13 @@ import System.Exit ( exitWith, ExitCode(..) )
 import Control.Monad ( forever )
 import Control.Concurrent
 import Control.Concurrent.Chan
+import Data.Data
 
 import Domain
 import Coordinate
+
+-- TODO: Remove Data and Typeable if not necessary
+data Message = Message { hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
 
 type RendererCommunication = IO (Board -> IO ())
 
