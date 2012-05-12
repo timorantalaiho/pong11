@@ -86,16 +86,19 @@ sendmessage h commandHistory lastMessageTime oldDirection newDirection = do
     duringLastSec :: Int -> Command -> Bool
     duringLastSec newest current = abs(newest - (timestamp current)) < 1100  
     
-sendmissile :: Handle -> Board -> Velocity -> Missiles -> IO( Missiles)
-sendmissile h board v [] = return ([])
-sendmissile h board v (x:xs) = do
+sendmissile :: Handle -> Board -> Velocity -> [Coordinates] -> Missiles -> IO( Missiles)
+sendmissile h board v [] [] = return ([])
+sendmissile h board v  _ [] = return ([])
+sendmissile h board v []  _ = return ([])
+sendmissile h board v wayPoints (x:xs) = do
   let ly = (leftPaddleMiddleY board)
       ry = (rightPaddleMiddleY board)
       ballGoingAway = Coordinate.x v > 0
-      launch = ballGoingAway && abs(ly - ry) < (boardHeight board)
+      rightHit = filter (\w -> abs(ly - (Coordinate.x w)) < 10) wayPoints
+      hasRightHit = length rightHit > 0
+      launch = ballGoingAway && hasRightHit && abs(ly - (Coordinate.y $ head rightHit)) < 50
   case launch of 
     True -> do 
-      putStrLn $ "LAUCHED MISSILE" ++ (show x)
       send h "launchMissile" x
       return (xs)
     False -> do 
@@ -118,7 +121,7 @@ handleMessage state h channel "gameIsOn" boardJson = do
       wayPoints = reverse $ (extractBallCoordinates board : (reverse $ snd directionResults))
       launched = removeMissedMissiles lastMessageTime (boardWidth board) (launchedMissiles state)
   rendererCommunication (Message lastMessageTime launched wayPoints board)
-  newmissiles <- sendmissile h board velocity oldMissiles
+  newmissiles <- sendmissile h board velocity wayPoints oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
   case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles launched
                  Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles launched
