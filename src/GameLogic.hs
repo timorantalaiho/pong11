@@ -10,12 +10,12 @@ calculateDirection history =
   chooseDirection current (target, coords) board
   where board = head history
         current = leftPaddleMiddleY board
-        targetOffset = (ballAngle history) * (paddleH board) / 2.0
+        targetOffset = ((ballAngle coords) * (paddleH board)) / 2.0
         -- Compute target without offset
         (target, coords) = targetY history
         -- Compute target WITH offset
 --        (uncorrectedTarget, coords) = targetY history
---        target = uncorrectedTarget + targetOffset
+--        target = trace ("OOO> " ++ (show targetOffset) ++ " " ++ (show uncorrectedTarget)) $ uncorrectedTarget + targetOffset
 
 ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
@@ -25,10 +25,12 @@ ballVelocity (s1:s2:xs) =
   where newCoordinates = extractBallCoordinates s1
         oldCoordinates = extractBallCoordinates s2
 
-ballAngle :: BoardHistory -> Float
-ballAngle history = ballAngleFromVelocity $ ballVelocity history
+ballAngle :: [Coordinates] -> Float
+ballAngle (p1:p2:ps) = ballAngleFromVelocity v
+  where v = normalizedVector $ vectorTo p1 p2
+ballAngle _ = trace "OOO> Less than two coords!" 0.0
 
-ballAngleFromVelocity :: Coordinates -> Float
+ballAngleFromVelocity :: Velocity -> Float
 ballAngleFromVelocity v = (asin $ dotProduct nv ourPaddleVector) * 2.0 / pi
   where nv = normalizedVector v
 
