@@ -30,17 +30,18 @@ main = do
     True -> do initRenderer
     False -> do return()
   let renderer = snd renderingParams
-  handleMessages handle $ renderer
+  handleConnection handle $ renderer
+
+connectSocket :: String -> Integer -> IO(Handle)
+connectSocket host port = connectTo host (PortNumber $ fromInteger port)
 
 determineRenderer :: String -> (Bool, RendererCommunication)
 determineRenderer x
   | x == "true" = (True, startRenderer)
   | otherwise = (False, dummyRenderer)
 
-connectSocket host port = connectTo host (PortNumber $ fromInteger port)
-
-handleMessages :: Handle -> RendererCommunication -> IO()
-handleMessages h channel = do
+handleConnection :: Handle -> RendererCommunication -> IO()
+handleConnection h channel = do
   lines <- liftM (L.split '\n') $ L.hGetContents h
   handleLines emptyState h channel lines
 
