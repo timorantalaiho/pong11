@@ -27,4 +27,3 @@ missileCurrentX currentTime missile = startX + (runtime * missileSpeed)
   where startX = missileStartX missile
         runtime = fromIntegral $ currentTime - (launchTime $ missile)
         missileSpeed = Missile.x $ speed $ missile
-  
