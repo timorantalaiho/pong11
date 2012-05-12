@@ -10,10 +10,10 @@ type BoardHistory = [Board]
 type CommandHistory = [Command]
 data Command = Command { timestamp :: Int, lastDirection :: Float } deriving (Data, Typeable, Show)
 
-data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory, missiles :: Missiles } deriving (Data, Typeable, Show)
+data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory, missiles :: Missiles, launchedMissiles :: [MissileLaunched] } deriving (Data, Typeable, Show)
 
 emptyState :: State
-emptyState = State emptyBoardHistory emptyCommandHistory []
+emptyState = State emptyBoardHistory emptyCommandHistory [] []
 
 emptyCommandHistory :: CommandHistory
 emptyCommandHistory = take 100 $ repeat (Command 0 0)

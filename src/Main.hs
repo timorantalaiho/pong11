@@ -115,20 +115,22 @@ handleMessage state h channel "gameIsOn" boardJson = do
       oldCommandHistory = (commandHistory state)
       oldMissiles = (missiles state)
       velocity = ballVelocity newBoardHistory
-  rendererCommunication (Message (snd directionResults) board)      
+      launched = (launchedMissiles state)
+  rendererCommunication (Message launched (snd directionResults) board)      
   newmissiles <- sendmissile h board velocity oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
-  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles
-                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles
+  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles launched
+                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles launched
 
 handleMessage state h channel "missileReady" missilesJson = do
   let missile = fromOk $ GJ.fromJSON missilesJson :: Missile  
   logMissilesReady missile
-  return (State (boardHistory state) (commandHistory state) (missile : (missiles state)))
+  return (State (boardHistory state) (commandHistory state) (missile : (missiles state)) (launchedMissiles state))
 
 handleMessage state h channel "missileLaunched" launchedJson = do
-  let missilesLaunched = fromOk $ GJ.fromJSON launchedJson :: MissileLaunched  
-  logMissilesLaunched missilesLaunched
+  let newLaunch = fromOk $ GJ.fromJSON launchedJson :: MissileLaunched  
+  logMissilesLaunched newLaunch
+  return (State (boardHistory state) (commandHistory state) (missiles state) (newLaunch : (launchedMissiles state)))
   return state
 
 handleMessage state h channel "gameStarted" playersJson = do

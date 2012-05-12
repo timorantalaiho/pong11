@@ -16,9 +16,10 @@ import Debug.Trace
 
 import Domain
 import Coordinate
+import Missile
 
 -- TODO: Remove Data and Typeable if not necessary
-data Message = Message { hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
+data Message = Message { launched :: [MissileLaunched], hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
 
 type RendererCommunication = IO (Message -> IO ())
 
@@ -54,7 +55,7 @@ clearScene = do
   glFlush
 
 renderBoard :: Message -> IO ()
-renderBoard (Message hitPoints board) = do
+renderBoard (Message launched hitPoints board) = do
   -- clear the screen and the depth buffer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
                          .|. gl_DEPTH_BUFFER_BIT
@@ -178,7 +179,7 @@ initRenderer = do
      -- window starts at upper left corner of the screen
      GLFW.setWindowPosition 0 0
      -- open a window
-     GLFW.setWindowTitle "Jeff Molofee's GL Code Tutorial ... NeHe '99"
+     GLFW.setWindowTitle "pingII++"
      -- register the function to do all our OpenGL drawing
      GLFW.setWindowRefreshCallback clearScene
      -- register the funciton called when our window is resized
