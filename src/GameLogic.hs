@@ -32,8 +32,8 @@ ballVelocity [] = Coordinates 0.0 0.0
 ballVelocity [x] = Coordinates 0.0 0.0
 ballVelocity (s1:s2:xs) =
   vectorTo newCoordinates oldCoordinates
-  where newCoordinates = extractBallCoordinates s1
-        oldCoordinates = extractBallCoordinates s2
+  where newCoordinates = ballCoordinates s1
+        oldCoordinates = ballCoordinates s2
 
 ballAngle :: [Coordinates] -> Float
 ballAngle (p1:p2:ps) = ballAngleFromVelocity v
@@ -71,7 +71,7 @@ targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
   ((Coordinate.y $ head hitPoints), hitPoints)
   where b = x
-        p = extractBallCoordinates b
+        p = ballCoordinates b
         v = ballVelocity (x:xs)
         hitPoints = traceBallToOurPaddle p v b []
 targetY [] = (0.0, [])

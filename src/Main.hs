@@ -134,7 +134,7 @@ handleMessage state h channel "gameIsOn" boardJson = do
       oldCommandHistory = (commandHistory state)
       oldMissiles = (missiles state)
       velocity = ballVelocity newBoardHistory
-      wayPoints = reverse $ (extractBallCoordinates board : (reverse $ snd directionResults))
+      wayPoints = reverse $ (ballCoordinates board : (reverse $ snd directionResults))
       launched = removeMissedMissiles lastMessageTime (boardWidth board) (launchedMissiles state)
   rendererCommunication (Message lastMessageTime launched wayPoints board)
   newmissiles <- sendmissile h board velocity wayPoints oldMissiles

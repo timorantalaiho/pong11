@@ -58,8 +58,8 @@ boardWidth = fromIntegral . maxWidth . conf
 boardHeight :: Board -> Float
 boardHeight = fromIntegral . maxHeight . conf
 
-extractBallCoordinates :: Board -> Coordinates
-extractBallCoordinates = Domain.pos . ball
+ballCoordinates :: Board -> Coordinates
+ballCoordinates = Domain.pos . ball
 
 ballR :: Board -> Int 
 ballR = ballRadius . conf

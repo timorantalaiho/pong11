@@ -101,8 +101,8 @@ renderBoardMarkers board = do
 
 renderBall :: Board -> IO()
 renderBall board = do
-  let ballx = realToFrac $ Coordinate.x $ extractBallCoordinates board
-      bally = realToFrac $ Coordinate.y $ extractBallCoordinates board
+  let ballx = realToFrac $ Coordinate.x $ ballCoordinates board
+      bally = realToFrac $ Coordinate.y $ ballCoordinates board
       radius = realToFrac $ ballR board
   glPushMatrix
   glTranslatef ballx bally (-6.0)
