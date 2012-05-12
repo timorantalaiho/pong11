@@ -30,7 +30,7 @@ data Board = Board { time :: Int, left :: Paddle, right :: Paddle, ball :: Ball,
 type Velocity = Coordinates
 
 paddleMiddleY :: Board -> Float -> Float
-paddleMiddleY board paddleY = paddleY + ((paddleH board) / 2.0)
+paddleMiddleY board = (+) ((paddleH board) / 2.0)
 
 leftPaddleMiddleY :: Board -> Float
 leftPaddleMiddleY board = paddleMiddleY board leftY  
