@@ -84,12 +84,13 @@ sendmessage h commandHistory lastMessageTime oldDirection newDirection = do
     duringLastSec :: Int -> Command -> Bool
     duringLastSec newest current = abs(newest - (timestamp current)) < 1100  
     
-sendmissile :: Handle -> Board -> Missiles -> IO( Missiles)
-sendmissile h board [] = return ([])
-sendmissile h board (x:xs) = do
+sendmissile :: Handle -> Board -> Velocity -> Missiles -> IO( Missiles)
+sendmissile h board v [] = return ([])
+sendmissile h board v (x:xs) = do
   let ly = (leftPaddleMiddleY board)
       ry = (rightPaddleMiddleY board)
-      launch = abs(ly - ry) < (boardHeight board)
+      ballGoingAway = Coordinate.x v > 0
+      launch = ballGoingAway && abs(ly - ry) < (boardHeight board)
   case launch of 
     True -> do 
       putStrLn $ "LAUCHED MISSILE" ++ (show x)
@@ -111,7 +112,8 @@ handleMessage state h channel "gameIsOn" boardJson = do
       lastMessageTime = (time board)
       oldCommandHistory = (commandHistory state)
       oldMissiles = (missiles state)
-  newmissiles <- sendmissile h board oldMissiles
+      velocity = ballVelocity newBoardHistory
+  newmissiles <- sendmissile h board velocity oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
   case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles
                  Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles
