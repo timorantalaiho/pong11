@@ -48,7 +48,7 @@ targetY [] = (0.0, [])
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints
     | ballStopped v = p : hitPoints
-    | weLost p board = (deflectFromPaddle v) : hitPoints
+    | gameEnded p board = (deflectFromPaddle v) : hitPoints
     | isJust ourPaddleHit = p' : hitPoints
     | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
     where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
@@ -64,6 +64,12 @@ ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
 
 weLost :: Coordinates -> Board -> Bool
 weLost ballCoordinates board = Coordinate.x ballCoordinates < leftWallX board
+
+weWon :: Coordinates -> Board -> Bool
+weWon ballCoordinates board = Coordinate.x ballCoordinates > rightWallX board
+
+gameEnded :: Coordinates -> Board -> Bool
+gameEnded c b = weWon c b || weLost c b
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
@@ -119,4 +125,9 @@ start_v2 = Coordinates 1 1
 start_p = Coordinates 15.0 15.0
 board = Board 123456 (Paddle 19 "foo") (Paddle 14 "bar") (Ball (Coordinates 100 100)) (Conf 640 480  50 10 5 15)
 board' = Board 123471 (Paddle 19 "foo") (Paddle 14 "bar") (Ball (Coordinates 2 2)) (Conf 640 480  50 10 5 15)
-history = [board',board]
+losingHistory = [board',board]
+
+winningBoard = Board 123456 (Paddle 19 "foo") (Paddle 14 "bar") (Ball (Coordinates 500 400)) (Conf 640 480  50 10 5 15)
+winningBoard' = Board 123471 (Paddle 19 "foo") (Paddle 14 "bar") (Ball (Coordinates 639 479)) (Conf 640 480  50 10 5 15)
+winningHistory = [winningBoard',winningBoard]
+
