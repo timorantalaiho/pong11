@@ -161,10 +161,8 @@ renderHitPointPairs (x:xs) = do
 renderMissiles :: Int -> [MissileLaunched] -> IO()
 renderMissiles currentTime [] = return ()
 renderMissiles currentTime (m:ms) = do
-  let startX = Coordinate.x $ Missile.pos $ m
-      runtime = fromIntegral $ currentTime - (launchTime $ m)
-      missileSpeed =  (Missile.x $ speed $ m)
-      xCoord = startX + (runtime * missileSpeed)
+  let startX = missileStartX m
+      xCoord = missileCurrentX currentTime m 
       yCoord = Coordinate.y $ Missile.pos $ m
   glColor3f 0.7 0.7 0.2
   glLineWidth 1.5
