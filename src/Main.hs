@@ -124,7 +124,6 @@ handleMessage state h channel "gameIsOn" boardJson = do
       newBoardHistory = board : (boardHistory state)
   logStatistics board
   rendererCommunication <- channel
-  putStrLn $ "<< " ++ (show board)
   let oldDirection = (lastDirection $ head $ commandHistory $ state)
       directionResults = calculateDirection newBoardHistory
       newDirection = fst directionResults
@@ -171,6 +170,4 @@ instance FromJSON (String, Value) where
 
 -- JSON helpers --
 fromOk (Success x) = x
--- fromOk (Error x) =  x
-
 

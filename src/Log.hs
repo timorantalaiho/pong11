@@ -4,15 +4,7 @@ import Domain
 import Coordinate
 
 logStatistics board = do
-  let paddleY = Domain.y $ left $ board
-      height = paddleHeight $ conf $ board
-      paddleMidY = paddleY + (fromIntegral height)
-      ballY = Coordinate.y $ pos $ ball $ board
-      ballX = Coordinate.x $ pos $ ball $ board
-      width = paddleWidth $ conf $ board
-      distanceX = ballX - (fromIntegral width)
-      distanceY = ballY - paddleMidY
-  writeLogLine $ show $ (paddleMidY, ballY, distanceY, distanceX)
+  writeLogLine $ show board
 
 logMissilesReady json = do 
   let msg = "<< MISSILES READY: " ++ (show json)
