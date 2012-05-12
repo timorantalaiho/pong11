@@ -32,11 +32,11 @@ vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
 
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
-chooseDirection currentY targetY board
-  | difference < 0.0 = (-1.0, snd targetY)
-  | difference > 0.0 = ( 1.0, snd targetY)
-  | otherwise = (0.0, snd targetY)
-  where difference = (fst targetY) - currentY
+chooseDirection currentY (targetY, coords) board
+  | difference < 0.0 = (-1.0, coords)
+  | difference > 0.0 = ( 1.0, coords)
+  | otherwise = (0.0, coords)
+  where difference = targetY - currentY
 
 targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
