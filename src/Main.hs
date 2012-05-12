@@ -13,6 +13,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Domain
 import Coordinate
+import Missile
 import GameLogic
 import Log
 import Render
@@ -124,6 +125,11 @@ handleMessage state h channel "missileReady" missilesJson = do
   let missile = fromOk $ GJ.fromJSON missilesJson :: Missile  
   logMissilesReady missile
   return (State (boardHistory state) (commandHistory state) (missile : (missiles state)))
+
+handleMessage state h channel "missileLaunched" launchedJson = do
+  let missilesLaunched = fromOk $ GJ.fromJSON launchedJson :: MissileLaunched  
+  logMissilesLaunched missilesLaunched
+  return state
 
 handleMessage state h channel "gameStarted" playersJson = do
   logGameStart playersJson

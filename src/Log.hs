@@ -18,6 +18,10 @@ logMissilesReady json = do
   let msg = "<< MISSILES READY: " ++ (show json)
   logLine msg
 
+logMissilesLaunched json = do 
+  let msg = "<< MISSILES LAUNCHED: " ++ (show json)
+  logLine msg
+
 logGameStart json = do 
   let msg = "<< GAME STARTED WITH: " ++ (show json)
   logLine msg

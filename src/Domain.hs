@@ -4,13 +4,12 @@ module Domain where
 import Data.Data
 import Data.Typeable
 import Coordinate
+import Missile
 
 type BoardHistory = [Board]
 type CommandHistory = [Command]
 data Command = Command { timestamp :: Int, lastDirection :: Float } deriving (Data, Typeable, Show)
 
-type Missile = String
-type Missiles = [String]
 data State = State { boardHistory :: BoardHistory, commandHistory :: CommandHistory, missiles :: Missiles } deriving (Data, Typeable, Show)
 
 emptyState :: State
@@ -61,7 +60,7 @@ boardHeight :: Board -> Float
 boardHeight board = fromIntegral $ maxHeight $ conf board
 
 extractBallCoordinates :: Board -> Coordinates
-extractBallCoordinates board = pos $ ball board
+extractBallCoordinates board = Domain.pos $ ball board
 
 ballR :: Board -> Int 
 ballR board = ballRadius $ conf $ board 
