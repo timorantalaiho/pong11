@@ -17,7 +17,7 @@ removeMissedMissiles currentTime maxWidth missiles = filter (inBoard currentTime
 inBoard :: Int -> Float -> MissileLaunched -> Bool
 inBoard currentTime maxWidth missile = do
   let currentX = missileCurrentX currentTime missile
-  (currentX > 0) && (currentX < maxWidth)
+  (currentX > -2000) && (currentX < (maxWidth + 2000))
     
 missileStartX :: MissileLaunched -> Float
 missileStartX m = Coordinate.x $ Missile.pos $ m
