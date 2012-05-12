@@ -42,10 +42,10 @@ rightPaddleMiddleY board = paddleMiddleY board rightY
   where rightY = Domain.y $ right board
 
 paddleW :: Board -> Float
-paddleW board = fromIntegral $ paddleWidth $ conf board
+paddleW = fromIntegral . paddleWidth . conf
 
 paddleH :: Board -> Float
-paddleH board = fromIntegral $ paddleHeight $ conf board
+paddleH = fromIntegral . paddleHeight . conf
 
 leftWallX :: Board -> Float
 leftWallX = paddleW
@@ -54,13 +54,13 @@ rightWallX :: Board -> Float
 rightWallX board = (boardWidth board) - (paddleW board)
 
 boardWidth :: Board -> Float
-boardWidth board = fromIntegral $ maxWidth $ conf board
+boardWidth = fromIntegral . maxWidth . conf
 
 boardHeight :: Board -> Float
-boardHeight board = fromIntegral $ maxHeight $ conf board
+boardHeight = fromIntegral . maxHeight . conf
 
 extractBallCoordinates :: Board -> Coordinates
-extractBallCoordinates board = Domain.pos $ ball board
+extractBallCoordinates = Domain.pos . ball
 
 ballR :: Board -> Int 
-ballR board = ballRadius $ conf $ board 
+ballR = ballRadius . conf
