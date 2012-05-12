@@ -20,7 +20,7 @@ inBoard currentTime maxWidth missile = do
   (currentX > -2000) && (currentX < (maxWidth + 2000))
     
 missileStartX :: MissileLaunched -> Float
-missileStartX m = Coordinate.x $ Missile.pos $ m
+missileStartX = Coordinate.x . Missile.pos
 
 missileCurrentX :: Int -> MissileLaunched -> Float
 missileCurrentX currentTime missile = startX + (runtime * missileSpeed) 
