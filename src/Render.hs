@@ -19,7 +19,7 @@ import Coordinate
 import Missile
 
 -- TODO: Remove Data and Typeable if not necessary
-data Message = Message { launched :: [MissileLaunched], hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
+data Message = Message { currentTime :: Int, launched :: [MissileLaunched], hitPoints :: [Coordinates], board :: Board } deriving (Data, Typeable, Show)
 
 type RendererCommunication = IO (Message -> IO ())
 
@@ -55,7 +55,7 @@ clearScene = do
   glFlush
 
 renderBoard :: Message -> IO ()
-renderBoard (Message launched hitPoints board) = do
+renderBoard (Message currentTime launched hitPoints board) = do
   -- clear the screen and the depth buffer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
                          .|. gl_DEPTH_BUFFER_BIT
@@ -70,7 +70,8 @@ renderBoard (Message launched hitPoints board) = do
   renderLeftPaddle board
   renderRightPaddle board
   renderHitPointPairs $ zip hitPoints (tail hitPoints)
-
+  renderMissiles currentTime launched 
+   
   glFlush
 
 renderQuad :: IO ()
@@ -141,7 +142,6 @@ renderLeftPaddle board = do
 
 renderHitPointPair :: (Coordinates, Coordinates) -> IO()
 renderHitPointPair ((Coordinates xf yf), (Coordinates xt yt)) = do
-  putStrLn "Rendering HITPOINT PAIR!"
   glBegin gl_LINES
   glVertex3f (realToFrac xf) (realToFrac yf) 0.0
   glVertex3f (realToFrac xt) (realToFrac yt) 0.0
@@ -152,6 +152,21 @@ renderHitPointPairs [] = Debug.Trace.trace "EMPTY HITPOINT LIST" $ return ()
 renderHitPointPairs (x:xs) = do
   renderHitPointPair x
   renderHitPointPairs xs
+  
+renderMissiles :: Int -> [MissileLaunched] -> IO()
+renderMissiles currentTime [] = return ()
+renderMissiles currentTime (m:ms) = do
+  let startX = Coordinate.x $ Missile.pos $ m
+      runtime = fromIntegral $ currentTime - (launchTime $ m)
+      missileSpeed =  (Missile.x $ speed $ m)
+      xCoord = startX + (runtime * missileSpeed)
+      yCoord = Coordinate.y $ Missile.pos $ m
+  glPushMatrix
+  glTranslatef (realToFrac xCoord) (realToFrac yCoord) (-6.0)
+  glScalef 5.0 5.0 1.0
+  renderQuad
+  glPopMatrix
+  renderMissiles currentTime ms
 
 shutdown :: GLFW.WindowCloseCallback
 shutdown = do

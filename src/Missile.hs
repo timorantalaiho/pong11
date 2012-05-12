@@ -9,5 +9,4 @@ import Coordinate
 type Missile = String
 type Missiles = [String]
 data Speed = Speed { x :: Float, y :: Float } deriving (Data, Typeable, Show)
-data MissileLaunched = MissileLaunched { code :: String, speed :: Speed, pos :: Coordinates} deriving (Data, Typeable, Show)
-
+data MissileLaunched = MissileLaunched { code :: String, speed :: Speed, pos :: Coordinates, launchTime :: Int } deriving (Data, Typeable, Show)
