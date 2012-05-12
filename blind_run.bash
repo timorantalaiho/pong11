@@ -1,10 +1,17 @@
 #!/bin/bash
 #cabal install
+if [ -z $1 ]
+then
+  PORT=8090
+else
+  PORT=$1
+fi
+
 TIMESTAMP=`date '+%Y%d%d%H%M'`
 MYNAME=pong11-`whoami`-blind-$TIMESTAMP-$RANDOM
 LOGFILE=/tmp/huskyrun-$MYNAME.log
 cat <<EOM
-I am $MYNAME, run without visualisation,
+I am $MYNAME, run to kappeli $PORT without visualisation,
 and log stdout/stderr to $LOGFILE . 
 To watch my game situation, run 
 
@@ -12,5 +19,5 @@ To watch my game situation, run
 
 EOM
 
-huskybot kappeli 8090 $MYNAME nographics > $LOGFILE 2>&1
+huskybot kappeli $PORT $MYNAME nographics > $LOGFILE 2>&1
 
