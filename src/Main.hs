@@ -121,10 +121,8 @@ isCloseEnough ly ry enemyDirection
 handleMessage :: State -> Handle -> RendererCommunication -> [Char] -> Value -> IO (State)
 handleMessage state h channel "gameIsOn" boardJson = do
   let board = fromOk $ GJ.fromJSON boardJson :: Board
-      newBoardHistory = board : (boardHistory state)
-  logStatistics board
-  rendererCommunication <- channel
-  let oldDirection = lastDirection $ head $ commandHistory $ state
+      newBoardHistory = take 5 $ board : (boardHistory state)
+      oldDirection = lastDirection $ head $ commandHistory $ state
       directionResults = calculateDirection newBoardHistory
       newDirection = fst directionResults
       lastMessageTime = time board
@@ -133,11 +131,13 @@ handleMessage state h channel "gameIsOn" boardJson = do
       velocity = ballVelocity newBoardHistory
       wayPoints = reverse $ (ballCoordinates board : (reverse $ snd directionResults))
       launched = removeMissedMissiles lastMessageTime (boardWidth board) (launchedMissiles state)
+  logStatistics board
+  rendererCommunication <- channel
   rendererCommunication (Message lastMessageTime launched wayPoints board)
   newmissiles <- sendmissile h board velocity wayPoints oldMissiles
   result <- sendmessage h oldCommandHistory lastMessageTime oldDirection newDirection
-  case result of Just(command) -> return $ State (take 5 newBoardHistory) (take 100 $ command : oldCommandHistory) newmissiles launched
-                 Nothing       -> return $ State (take 5 newBoardHistory) (commandHistory state) newmissiles launched
+  case result of Just(command) -> return $ State newBoardHistory (take 100 $ command : oldCommandHistory) newmissiles launched
+                 Nothing       -> return $ State newBoardHistory (commandHistory state) newmissiles launched
 
 handleMessage state h channel "missileReady" missilesJson = do
   let missile = fromOk $ GJ.fromJSON missilesJson :: Missile  
