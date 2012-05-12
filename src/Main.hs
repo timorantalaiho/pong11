@@ -55,9 +55,7 @@ handleLines state h channel [] = do
   return ()
 handleLines state h channel lines = do
   newstate <- handleLine state h channel $ head lines
-  --putStrLn "<< state"
-  --putStrLn $ show newstate
-  --putStrLn "state >>"
+  writeStateLogLine newstate
   handleLines newstate h channel $ tail lines
 
 handleLine ::  State -> Handle -> RendererCommunication -> L.ByteString -> IO (State)
