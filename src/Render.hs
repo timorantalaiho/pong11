@@ -71,12 +71,11 @@ renderBoard (Message currentTime launched hitPoints board) = do
   renderRightPaddle board
   renderHitPointPairs $ zip hitPoints (tail hitPoints)
   renderMissiles currentTime launched 
-   
+
   glFlush
 
 renderQuad :: IO ()
 renderQuad = do
-  glColor3f 0.5 0.5 0.5
   glBegin gl_QUADS -- start drawing a polygon (4 sided)
   glVertex3f (-0.5)   0.5  0 -- top left
   glVertex3f   0.5    0.5  0 -- top right
@@ -89,6 +88,7 @@ renderBoardMarker x y = do
   glPushMatrix
   glTranslatef x y (-6.0)
   glScalef 10.0 10.0 1.0
+  glColor3f 0.5 0.5 0.5
   renderQuad
   glPopMatrix
 
@@ -106,14 +106,9 @@ renderBall board = do
       radius = realToFrac $ ballR board
   glPushMatrix
   glTranslatef ballx bally (-6.0)
-  glScalef radius radius 1.0
-  glColor3f 0.5 0.5 0.5
-  glBegin gl_QUADS -- start drawing a polygon (4 sided)
-  glVertex3f (-0.5)   0.5  0 -- top left
-  glVertex3f   0.5    0.5  0 -- top right
-  glVertex3f   0.5  (-0.5) 0 -- bottom right
-  glVertex3f (-0.5) (-0.5) 0 -- bottom left
-  glEnd
+  glScalef (radius * 2.5) (radius * 2.5) 1.0
+  glColor3f 0.3 0.5 0.9
+  renderQuad
   glPopMatrix
 
 renderPaddle :: Board -> Float -> Float -> IO()
@@ -123,6 +118,7 @@ renderPaddle board middleX middleY = do
   glPushMatrix
   glTranslatef (realToFrac middleX) (realToFrac middleY) (-6.0)
   glScalef (realToFrac width) (realToFrac height) 1.0
+  glColor3f 0.2 0.8 0.0
   renderQuad
   glPopMatrix
   
@@ -142,13 +138,22 @@ renderLeftPaddle board = do
 
 renderHitPointPair :: (Coordinates, Coordinates) -> IO()
 renderHitPointPair ((Coordinates xf yf), (Coordinates xt yt)) = do
+  glPushMatrix
+  glTranslatef (realToFrac xf) (realToFrac yf) (-6.0)
+  glScalef 15.0 15.0 1.0
+  glColor3f 1.0 0.0 0.0
+  renderQuad
+  glPopMatrix
+
+  glLineWidth 2.5
   glBegin gl_LINES
-  glVertex3f (realToFrac xf) (realToFrac yf) 0.0
-  glVertex3f (realToFrac xt) (realToFrac yt) 0.0
+  glColor3f 1.0 0.0 0.0
+  glVertex3f (realToFrac xf) (realToFrac yf) (-6.0)
+  glVertex3f (realToFrac xt) (realToFrac yt) (-6.0)
   glEnd
 
 renderHitPointPairs :: [(Coordinates, Coordinates)] -> IO()
-renderHitPointPairs [] = Debug.Trace.trace "EMPTY HITPOINT LIST" $ return ()
+renderHitPointPairs [] = return ()
 renderHitPointPairs (x:xs) = do
   renderHitPointPair x
   renderHitPointPairs xs
