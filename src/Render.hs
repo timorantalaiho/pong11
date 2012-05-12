@@ -166,11 +166,12 @@ renderMissiles currentTime (m:ms) = do
       missileSpeed =  (Missile.x $ speed $ m)
       xCoord = startX + (runtime * missileSpeed)
       yCoord = Coordinate.y $ Missile.pos $ m
-  glPushMatrix
-  glTranslatef (realToFrac xCoord) (realToFrac yCoord) (-6.0)
-  glScalef 5.0 5.0 1.0
-  renderQuad
-  glPopMatrix
+  glColor3f 0.7 0.7 0.2
+  glLineWidth 1.5
+  glBegin gl_LINES
+  glVertex3f (realToFrac startX) (realToFrac yCoord) (-6.0)
+  glVertex3f (realToFrac xCoord) (realToFrac yCoord) (-6.0)
+  glEnd
   renderMissiles currentTime ms
 
 shutdown :: GLFW.WindowCloseCallback
