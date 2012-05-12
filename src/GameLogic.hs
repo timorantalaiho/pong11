@@ -49,10 +49,11 @@ dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
 
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY (targetY, coords) board
-  | difference < 0.0 = (-1.0, coords)
-  | difference > 0.0 = ( 1.0, coords)
+  | difference < (-threshold) = (-1.0, coords)
+  | difference >  threshold = ( 1.0, coords)
   | otherwise = (0.0, coords)
   where difference = targetY - currentY
+        threshold = (paddleH board) / 4.0
 
 targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
