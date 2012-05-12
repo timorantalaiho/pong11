@@ -35,3 +35,5 @@ logLine msg = do
   writeLogLine msg
 
 writeLogLine line = appendFile "/tmp/pong11.log" $ ('\n' : line)
+
+writeMsgLogLine line = appendFile "/tmp/pong11-messages.log" $ ('\n' : line)

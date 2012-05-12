@@ -63,6 +63,7 @@ handleLine ::  State -> Handle -> RendererCommunication -> L.ByteString -> IO (S
 handleLine state h channel msg = do
   case decode msg of
     Just json -> do
+      writeMsgLogLine (show json)
       let (msgType, msgData) = fromOk $ fromJSON json
       handleMessage state h channel msgType msgData
     Nothing -> do 
