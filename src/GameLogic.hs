@@ -82,11 +82,14 @@ traceBallToOurPaddle p v board hitPoints
     | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
     where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
           possibleHits = map (\ht -> ht p v board) hitTests
-          hit = filter isJust possibleHits
+          hits = catMaybes possibleHits
           ourPaddleHit = head possibleHits
-          (v',p') = case hit of
-              [Just (nv,np)] -> (nv,np)
-              _ -> (v,p)
+          (v',p') = headOrDefault hits (v,p)
+
+-- Something like this could be in Haskell library, but could not find it
+headOrDefault :: [a] -> a -> a
+headOrDefault (x:xs) _ = x
+headOrDefault _ d = d
 
 ballStopped :: Velocity -> Bool
 ballStopped (Coordinates vx vy) = (vx == 0.0) || (vy == 0.0)
