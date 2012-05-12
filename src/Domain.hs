@@ -30,8 +30,7 @@ data Board = Board { time :: Int, left :: Paddle, right :: Paddle, ball :: Ball,
 type Velocity = Coordinates
 
 paddleMiddleY :: Board -> Float -> Float
-paddleMiddleY board paddleY = paddleY + (height / 2.0)
-  where height = fromIntegral $ paddleHeight $ conf $ board
+paddleMiddleY board paddleY = paddleY + ((paddleH board) / 2.0)
 
 leftPaddleMiddleY :: Board -> Float
 leftPaddleMiddleY board = paddleMiddleY board leftY  
