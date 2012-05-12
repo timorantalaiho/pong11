@@ -7,11 +7,15 @@ import Debug.Trace
 
 calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
-  chooseDirection current target board
+  chooseDirection current (target, coords) board
   where board = head history
         current = leftPaddleMiddleY board
-        targetOffset = negate $ (ballAngle history) * (paddleH board) / 2.0
-        target = trace ("offset=" ++ show targetOffset) $ targetY history
+        targetOffset = (ballAngle history) * (paddleH board) / 2.0
+        -- Compute target without offset
+        (target, coords) = targetY history
+        -- Compute target WITH offset
+--        (uncorrectedTarget, coords) = targetY history
+--        target = uncorrectedTarget + targetOffset
 
 ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
@@ -22,14 +26,26 @@ ballVelocity (s1:s2:xs) =
         oldCoordinates = extractBallCoordinates s2
 
 ballAngle :: BoardHistory -> Float
-ballAngle history = (Coordinate.y v) / (Coordinate.x v)
-  where v = ballVelocity history
+ballAngle history = ballAngleFromVelocity $ ballVelocity history
+
+ballAngleFromVelocity :: Coordinates -> Float
+ballAngleFromVelocity v = (asin $ dotProduct nv ourPaddleVector) * 2.0 / pi
+  where nv = normalizedVector v
 
 vectorTo :: Coordinates -> Coordinates -> Coordinates
 vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinate.y c1) - (Coordinate.y c2))
 
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
+
+normalizedVector :: Coordinates -> Coordinates
+normalizedVector (Coordinates x y) = Coordinates (x/len) (y/len)
+  where len = sqrt (x*x + y*y)
+
+ourPaddleVector = Coordinates 0.0 1.0
+
+dotProduct :: Coordinates -> Coordinates -> Float
+dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
 
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY (targetY, coords) board
