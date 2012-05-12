@@ -10,12 +10,22 @@ calculateDirection history =
   chooseDirection current (target, coords) board
   where board = head history
         current = leftPaddleMiddleY board
-        targetOffset = ((ballAngle coords) * (paddleH board)) / 2.0
+        targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
         -- Compute target without offset
-        (target, coords) = targetY history
+        -- (target, coords) = targetY history
         -- Compute target WITH offset
---        (uncorrectedTarget, coords) = targetY history
---        target = trace ("OOO> " ++ (show targetOffset) ++ " " ++ (show uncorrectedTarget)) $ uncorrectedTarget + targetOffset
+        (uncorrectedTarget, coords) = targetY history
+        target = clampTargetPos board $ uncorrectedTarget + targetOffset
+
+clampTargetPos :: Board -> Float -> Float
+clampTargetPos board yPos
+  | yPos < top = top
+  | yPos > bottom = bottom
+  | otherwise = yPos
+    where ph = paddleH board
+          bh = boardHeight board
+          top = ph / 2.0
+          bottom = bh - (ph / 2.0)
 
 ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
@@ -55,7 +65,7 @@ chooseDirection currentY (targetY, coords) board
   | difference >  threshold = ( 1.0, coords)
   | otherwise = (0.0, coords)
   where difference = targetY - currentY
-        threshold = (paddleH board) / 4.0
+        threshold = (paddleH board) / 8.0
 
 targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
