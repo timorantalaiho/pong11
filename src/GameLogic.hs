@@ -11,9 +11,6 @@ calculateDirection history =
   where board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
-        -- Compute target without offset
-        -- (target, coords) = targetY history
-        -- Compute target WITH offset
         (uncorrectedTarget, coords) = targetY history
         target = clampTargetPos board $ uncorrectedTarget + targetOffset
 
@@ -23,38 +20,39 @@ clampTargetPos board yPos
   | yPos > bottom = bottom
   | otherwise = yPos
     where ph = paddleH board
+          half_ph = ph / 2.0
           bh = boardHeight board
-          top = ph / 2.0
-          bottom = bh - (ph / 2.0)
+          top = half_ph
+          bottom = bh - half_ph
 
 ballVelocity :: BoardHistory -> Velocity
-ballVelocity [] = Coordinates 0.0 0.0
-ballVelocity [x] = Coordinates 0.0 0.0
 ballVelocity (s1:s2:xs) =
   vectorTo newCoordinates oldCoordinates
   where newCoordinates = ballCoordinates s1
         oldCoordinates = ballCoordinates s2
+ballVelocity _ = Coordinates 0.0 0.0
 
 ballAngle :: [Coordinates] -> Float
 ballAngle (p1:p2:ps) = ballAngleFromVelocity v
   where v = normalizedVector $ vectorTo p1 p2
-ballAngle _ = trace "OOO> Less than two coords!" 0.0
+ballAngle _ = 0.0
 
 ballAngleFromVelocity :: Velocity -> Float
 ballAngleFromVelocity v = (asin $ dotProduct nv ourPaddleVector) * 2.0 / pi
   where nv = normalizedVector v
+        ourPaddleVector = Coordinates 0.0 1.0
 
 vectorTo :: Coordinates -> Coordinates -> Coordinates
-vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinate.y c1) - (Coordinate.y c2))
+vectorTo (Coordinates x1 y1) (Coordinates x2 y2) =
+    Coordinates (x1 - x2) (y1 - y2)
 
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
-vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
+vectorFrom (Coordinates x1 y1) (Coordinates x2 y2) =
+    Coordinates (x1 + x2) (y1 + y2)
 
 normalizedVector :: Coordinates -> Coordinates
 normalizedVector (Coordinates x y) = Coordinates (x/len) (y/len)
   where len = sqrt (x*x + y*y)
-
-ourPaddleVector = Coordinates 0.0 1.0
 
 dotProduct :: Coordinates -> Coordinates -> Float
 dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
@@ -68,14 +66,13 @@ chooseDirection currentY (targetY, coords) board
         threshold = (paddleH board) / 8.0
 
 targetY :: BoardHistory -> (Float, [Coordinates])
-targetY (x:xs) =
-  ((Coordinate.y $ head hitPoints), hitPoints)
-  where b = x
-        p = ballCoordinates b
-        v = ballVelocity (x:xs)
+targetY (b:bs) =
+  (Coordinate.y $ head hitPoints, hitPoints)
+  where p = ballCoordinates b
+        history = (b:bs)
+        v = ballVelocity history
         hitPoints = traceBallToOurPaddle p v b []
 targetY [] = (0.0, [])
-
 
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints
