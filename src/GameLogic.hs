@@ -7,10 +7,25 @@ import Debug.Trace
 
 calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
-  chooseDirection current target board
+  chooseDirection current (target, coords) board
   where board = head history
         current = leftPaddleMiddleY board
-        target = targetY history
+        targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
+        -- Compute target without offset
+        -- (target, coords) = targetY history
+        -- Compute target WITH offset
+        (uncorrectedTarget, coords) = targetY history
+        target = clampTargetPos board $ uncorrectedTarget + targetOffset
+
+clampTargetPos :: Board -> Float -> Float
+clampTargetPos board yPos
+  | yPos < top = top
+  | yPos > bottom = bottom
+  | otherwise = yPos
+    where ph = paddleH board
+          bh = boardHeight board
+          top = ph / 2.0
+          bottom = bh - (ph / 2.0)
 
 ballVelocity :: BoardHistory -> Velocity
 ballVelocity [] = Coordinates 0.0 0.0
@@ -20,20 +35,37 @@ ballVelocity (s1:s2:xs) =
   where newCoordinates = extractBallCoordinates s1
         oldCoordinates = extractBallCoordinates s2
 
+ballAngle :: [Coordinates] -> Float
+ballAngle (p1:p2:ps) = ballAngleFromVelocity v
+  where v = normalizedVector $ vectorTo p1 p2
+ballAngle _ = trace "OOO> Less than two coords!" 0.0
+
+ballAngleFromVelocity :: Velocity -> Float
+ballAngleFromVelocity v = (asin $ dotProduct nv ourPaddleVector) * 2.0 / pi
+  where nv = normalizedVector v
+
 vectorTo :: Coordinates -> Coordinates -> Coordinates
 vectorTo c1 c2 = Coordinates ((Coordinate.x c1) - (Coordinate.x c2)) ((Coordinate.y c1) - (Coordinate.y c2))
 
 vectorFrom :: Coordinates -> Coordinates -> Coordinates
 vectorFrom c1 c2 = Coordinates ((Coordinate.x c1) + (Coordinate.x c2)) ((Coordinate.y c1) + (Coordinate.y c2))
 
+normalizedVector :: Coordinates -> Coordinates
+normalizedVector (Coordinates x y) = Coordinates (x/len) (y/len)
+  where len = sqrt (x*x + y*y)
+
+ourPaddleVector = Coordinates 0.0 1.0
+
+dotProduct :: Coordinates -> Coordinates -> Float
+dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
+
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
-chooseDirection currentY targetY board
-  | difference < negHalfPaddleH = (-1.0, (snd targetY))
-  | difference > posHalfPaddleH = (1.0, (snd targetY))
-  | otherwise = (0.0, (snd targetY))
-  where difference = (fst targetY) - currentY
-        posHalfPaddleH = (paddleH board) / 2.0
-        negHalfPaddleH = negate posHalfPaddleH
+chooseDirection currentY (targetY, coords) board
+  | difference < (-threshold) = (-1.0, coords)
+  | difference >  threshold = ( 1.0, coords)
+  | otherwise = (0.0, coords)
+  where difference = targetY - currentY
+        threshold = (paddleH board) / 8.0
 
 targetY :: BoardHistory -> (Float, [Coordinates])
 targetY (x:xs) =
