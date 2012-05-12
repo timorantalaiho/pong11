@@ -48,6 +48,7 @@ targetY [] = (0.0, [])
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints
     | ballStopped v = p : hitPoints
+    | weLost p board = (deflectFromPaddle v) : hitPoints
     | isJust ourPaddleHit = p' : hitPoints
     | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
     where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
@@ -60,6 +61,9 @@ traceBallToOurPaddle p v board hitPoints
 
 ballStopped :: Velocity -> Bool
 ballStopped v = ((Coordinate.y v) == 0.0) || ((Coordinate.x v) == 0.0)
+
+weLost :: Coordinates -> Board -> Bool
+weLost ballCoordinates board = Coordinate.x ballCoordinates < leftWallX board
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
