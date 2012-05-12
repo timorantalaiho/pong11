@@ -93,10 +93,12 @@ sendmissile h board v []  _ = return ([])
 sendmissile h board v wayPoints (x:xs) = do
   let ly = (leftPaddleMiddleY board)
       ry = (rightPaddleMiddleY board)
-      ballGoingAway = Coordinate.x v > 0
-      rightHit = filter (\w -> abs(ly - (Coordinate.x w)) < 10) wayPoints
-      hasRightHit = length rightHit > 0
-      launch = ballGoingAway && hasRightHit && abs(ly - (Coordinate.y $ head rightHit)) < 50
+      --ballGoingAway = Coordinate.x v > 0
+      --rightHit = filter (\w -> abs(ly - (Coordinate.x w)) < 10) wayPoints
+      --hasRightHit = length rightHit > 0
+      --launch = ballGoingAway && hasRightHit && abs(ly - (Coordinate.y $ head rightHit)) < 50
+      --launch = ballGoingAway && abs(ly -ry) < 50
+      launch = abs(ly - ry) < 10
   case launch of 
     True -> do 
       send h "launchMissile" x
