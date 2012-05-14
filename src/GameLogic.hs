@@ -84,12 +84,7 @@ traceBallToOurPaddle p v board hitPoints
           possibleHits = map (\ht -> ht p v board) hitTests
           hits = catMaybes possibleHits
           ourPaddleHit = head possibleHits
-          (v',p') = headOrDefault hits (v,p)
-
--- Something like this could be in Haskell library, but could not find it
-headOrDefault :: [a] -> a -> a
-headOrDefault (x:xs) _ = x
-headOrDefault _ d = d
+          (v',p') = fromMaybe (v,p) $ listToMaybe hits
 
 ballStopped :: Velocity -> Bool
 ballStopped (Coordinates vx vy) = (vx == 0.0) || (vy == 0.0)
