@@ -2,13 +2,20 @@
 #cabal install
 if [ -z $1 ]
 then
-  PORT=8090
+  HOST=192.168.1.38
 else
-  PORT=$1
+  HOST=$1
+fi
+
+if [ -z $2 ]
+then
+  PORT=8091
+else
+  PORT=$2
 fi
 
 TIMESTAMP=`date '+%Y%d%d%H%M'`
-MYNAME=pong11-`whoami`-blind-$TIMESTAMP-$RANDOM
+MYNAME=pong11-`whoami`-visual-$TIMESTAMP-$RANDOM
 LOGFILE=/tmp/huskyrun-$MYNAME.log
 cat <<EOM
 I am $MYNAME, run to kappeli $PORT without visualisation,
@@ -19,5 +26,5 @@ To watch my game situation, run
 
 EOM
 
-huskybot kappeli $PORT $MYNAME nographics > $LOGFILE 2>&1
+huskybot $HOST $PORT $MYNAME nographics > $LOGFILE 2>&1
 

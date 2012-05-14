@@ -2,9 +2,16 @@
 #cabal install
 if [ -z $1 ]
 then
-  PORT=8090
+  HOST=192.168.1.38
 else
-  PORT=$1
+  HOST=$1
+fi
+
+if [ -z $2 ]
+then
+  PORT=8091
+else
+  PORT=$2
 fi
 
 TIMESTAMP=`date '+%Y%d%d%H%M'`
@@ -19,5 +26,5 @@ To watch my game situation, run
 
 EOM
 
-huskybot kappeli $PORT $MYNAME true > $LOGFILE 2>&1
+huskybot $HOST $PORT $MYNAME true > $LOGFILE 2>&1
 
