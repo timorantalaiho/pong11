@@ -97,43 +97,43 @@ gameEnded c b = weWon c b || weLost c b
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p v board
-    | timeToInpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
+    | timeToImpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
     | otherwise = Nothing
-    where timeToInpact = (left - (Coordinate.x p)) / (Coordinate.x v)
+    where timeToImpact = (left - (Coordinate.x p)) / (Coordinate.x v)
           left = leftWallX board
-          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToImpact)
           p' = Coordinates left yPos
           v' = deflectFromPaddle v
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOpponentPaddle p v board
-    | timeToInpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
+    | timeToImpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
     | otherwise = Nothing
-    where timeToInpact = (right - (Coordinate.x p)) / (Coordinate.x v)
+    where timeToImpact = (right - (Coordinate.x p)) / (Coordinate.x v)
           right = rightWallX board
-          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToInpact)
+          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToImpact)
           p' = Coordinates right yPos
           v' = deflectFromPaddle v
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p (Coordinates x 0.0) board = Nothing
 hitsCeiling p v board
-  | timeToInpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
+  | timeToImpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
   | otherwise = Nothing
-  where timeToInpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
-        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
+  where timeToImpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToImpact)
         p' = Coordinates xPos 0.0
         v' = deflectFromWall v
 
 hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsFloor p (Coordinates x 0.0) board = Nothing
 hitsFloor p v board
-  | timeToInpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
+  | timeToImpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
   | otherwise = Nothing
-  where timeToInpact = (height - (Coordinate.y p)) / (Coordinate.y v)
+  where timeToImpact = (height - (Coordinate.y p)) / (Coordinate.y v)
         height = boardHeight board
-        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToInpact)
+        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToImpact)
         p' = Coordinates xPos height
         v' = deflectFromWall v
 
