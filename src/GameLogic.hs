@@ -71,6 +71,17 @@ normalizedVector (Coordinates x y) = Coordinates (x/len) (y/len)
 dotProduct :: Coordinates -> Coordinates -> Float
 dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
 
+perpendicular :: Coordinates -> Coordinates
+perpendicular (Coordinates vx vy) = Coordinates (negate vy) vx
+
+lineLineIntersection :: (Coordinates, Coordinates) -> (Coordinates, Coordinates) -> (Float, Float)
+lineLineIntersection (base1, direction1) (base2, direction2) =
+  (s, t)
+  where s = (dotProduct (base2 - base1) perDirection2) / (dotProduct direction1 perDirection2)
+        t = (dotProduct (base1 - base2) perDirection1) / (dotProduct direction2 perDirection1)
+        perDirection2 = perpendicular direction2
+        perDirection1 = perpendicular direction1
+
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY (targetY, coords) board
   | difference < (-threshold) = (-1.0, coords)
@@ -118,17 +129,6 @@ hitsOurPaddle p v board
         wallX = leftWallX board
         v' = deflectFromPaddle v
         p' = (Coordinates wallX 0.0) + ((Coordinates 0.0 1.0) `vscale` intersection)
-
-lineLineIntersection :: (Coordinates, Coordinates) -> (Coordinates, Coordinates) -> (Float, Float)
-lineLineIntersection (base1, direction1) (base2, direction2) =
-  (s, t)
-  where s = (dotProduct (base2 - base1) perDirection2) / (dotProduct direction1 perDirection2)
-        t = (dotProduct (base1 - base2) perDirection1) / (dotProduct direction2 perDirection1)
-        perDirection2 = perpendicular direction2
-        perDirection1 = perpendicular direction1
-
-perpendicular :: Coordinates -> Coordinates
-perpendicular (Coordinates vx vy) = Coordinates (negate vy) vx
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
