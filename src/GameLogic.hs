@@ -5,6 +5,20 @@ import Coordinate
 import Data.Maybe
 import Debug.Trace
 
+instance Eq Coordinates where
+  (==) (Coordinates x1 y1) (Coordinates x2 y2) = (x1 == x2) && (y1 == y2)
+
+instance Num Coordinates where
+  (+) (Coordinates x1 y1) (Coordinates x2 y2) = Coordinates (x1 + x2) (y1 + y2)
+  (-) (Coordinates x1 y1) (Coordinates x2 y2) = Coordinates (x1 - x2) (y1 - y2)  
+  (*) (Coordinates x1 y1) (Coordinates x2 y2) = error "Multiplication between two coordinates undefined"
+  abs (Coordinates x y) = (Coordinates (abs x) (abs y))
+  signum (Coordinates x1 y1) = error "signum of coordinates undefined"
+  fromInteger i = (Coordinates (fromInteger i) (fromInteger i))
+
+vscale :: Coordinates -> Float -> Coordinates
+vscale (Coordinates vx vy) s = Coordinates (vx * s) (vy * s)
+
 calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
   chooseDirection current (target, coords) board
@@ -97,13 +111,24 @@ gameEnded c b = weWon c b || weLost c b
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p v board
-    | timeToImpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
-    | otherwise = Nothing
-    where timeToImpact = (left - (Coordinate.x p)) / (Coordinate.x v)
-          left = leftWallX board
-          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToImpact)
-          p' = Coordinates left yPos
-          v' = deflectFromPaddle v
+  | timeToImpact > 0.0 && withinBoardHeight intersection board = Just (v', p')
+  | otherwise = Nothing
+  where (timeToImpact, intersection) = lineLineIntersection (p, v) leftWallLine
+        leftWallLine = ((Coordinates wallX 0.0), (Coordinates 0.0 1.0))
+        wallX = leftWallX board
+        v' = deflectFromPaddle v
+        p' = (Coordinates wallX 0.0) + ((Coordinates 0.0 1.0) `vscale` intersection)
+
+lineLineIntersection :: (Coordinates, Coordinates) -> (Coordinates, Coordinates) -> (Float, Float)
+lineLineIntersection (base1, direction1) (base2, direction2) =
+  (s, t)
+  where s = (dotProduct (base2 - base1) perDirection2) / (dotProduct direction1 perDirection2)
+        t = (dotProduct (base1 - base2) perDirection1) / (dotProduct direction2 perDirection1)
+        perDirection2 = perpendicular direction2
+        perDirection1 = perpendicular direction1
+
+perpendicular :: Coordinates -> Coordinates
+perpendicular (Coordinates vx vy) = Coordinates (negate vy) vx
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
