@@ -5,6 +5,8 @@ import Coordinate
 import Data.Maybe
 import Debug.Trace
 
+type Line = (Coordinates, Coordinates)
+
 instance Eq Coordinates where
   (==) (Coordinates x1 y1) (Coordinates x2 y2) = (x1 == x2) && (y1 == y2)
 
@@ -74,7 +76,7 @@ dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
 perpendicular :: Coordinates -> Coordinates
 perpendicular (Coordinates vx vy) = Coordinates (negate vy) vx
 
-lineLineIntersection :: (Coordinates, Coordinates) -> (Coordinates, Coordinates) -> (Float, Float)
+lineLineIntersection :: Line -> Line -> (Float, Float)
 lineLineIntersection (base1, direction1) (base2, direction2) =
   (s, t)
   where s = (dotProduct (base2 - base1) perDirection2) / (dotProduct direction1 perDirection2)
@@ -121,25 +123,26 @@ gameEnded c b = weWon c b || weLost c b
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
-hitsOurPaddle p v board
-  | timeToImpact > 0.0 && withinBoardHeight intersection board = Just (v', p')
-  | otherwise = Nothing
-  where (timeToImpact, intersection) = lineLineIntersection (p, v) leftWallLine
-        leftWallLine = ((Coordinates wallX 0.0), (Coordinates 0.0 1.0))
+hitsOurPaddle p v board =
+  hitsPaddle p v edge
+  where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
         wallX = leftWallX board
-        v' = deflectFromPaddle v
-        p' = (Coordinates wallX 0.0) + ((Coordinates 0.0 1.0) `vscale` intersection)
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
-hitsOpponentPaddle p v board
-    | timeToImpact > 0.0 && withinBoardHeight yPos board = Just (v', p')
-    | otherwise = Nothing
-    where timeToImpact = (right - (Coordinate.x p)) / (Coordinate.x v)
-          right = rightWallX board
-          yPos = (Coordinate.y p) + ((Coordinate.y v) * timeToImpact)
-          p' = Coordinates right yPos
-          v' = deflectFromPaddle v
+hitsOpponentPaddle p v board =
+  hitsPaddle p v edge
+  where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
+        wallX = rightWallX board
+
+hitsPaddle :: Coordinates -> Velocity -> Line -> Maybe (Velocity, Coordinates)
+hitsPaddle p v edge
+  | timeToImpact > 0.0 && intersection > 0.0 && intersection < 1.0 = Just (v', p')
+  | otherwise = Nothing
+  where (timeToImpact, intersection) = lineLineIntersection (p, v) edge
+        (edgeOrigin, edgeDirection) = edge
+        v' = deflectFromPaddle v
+        p' = edgeOrigin + (edgeDirection `vscale` intersection)
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p (Coordinates x 0.0) board = Nothing
