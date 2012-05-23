@@ -124,46 +124,50 @@ gameEnded c b = weWon c b || weLost c b
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p v board =
-  hitsPaddle p v edge
+  case hit of
+    Just p' -> Just (deflectFromPaddle v, p')
+    _ -> Nothing
   where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
         wallX = leftWallX board
+        hit = hitsEdge p v edge
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOpponentPaddle p v board =
-  hitsPaddle p v edge
+  case hit of
+    Just p' -> Just (deflectFromPaddle v, p')
+    _ -> Nothing
   where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
         wallX = rightWallX board
-
-hitsPaddle :: Coordinates -> Velocity -> Line -> Maybe (Velocity, Coordinates)
-hitsPaddle p v edge
-  | timeToImpact > 0.0 && intersection > 0.0 && intersection < 1.0 = Just (v', p')
-  | otherwise = Nothing
-  where (timeToImpact, intersection) = lineLineIntersection (p, v) edge
-        (edgeOrigin, edgeDirection) = edge
-        v' = deflectFromPaddle v
-        p' = edgeOrigin + (edgeDirection `vscale` intersection)
+        hit = hitsEdge p v edge
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p (Coordinates x 0.0) board = Nothing
-hitsCeiling p v board
-  | timeToImpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
-  | otherwise = Nothing
-  where timeToImpact = (0.0 - (Coordinate.y p)) / (Coordinate.y v)
-        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToImpact)
-        p' = Coordinates xPos 0.0
-        v' = deflectFromWall v
+hitsCeiling p v board =
+  case hit of
+    Just p' -> Just(deflectFromWall v, p')
+    _ -> Nothing
+  where edge = ((Coordinates (leftWallX board) 0.0), (Coordinates edgeLength 0.0))
+        edgeLength = (rightWallX board) - (leftWallX board)
+        hit = hitsEdge p v edge
 
 hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsFloor p (Coordinates x 0.0) board = Nothing
-hitsFloor p v board
-  | timeToImpact > 0.0 && withinGameAreaWidth xPos board = Just (v', p')
+hitsFloor p v board =
+  case hit of
+    Just p' -> Just(deflectFromWall v, p')
+    _ -> Nothing    
+  where edge = ((Coordinates (leftWallX board) (boardHeight board)), (Coordinates edgeLength 0.0))
+        edgeLength = (rightWallX board) - (leftWallX board)
+        hit = hitsEdge p v edge
+
+hitsEdge :: Coordinates -> Velocity -> Line -> Maybe Coordinates
+hitsEdge p v edge
+  | timeToImpact > 0.0 && intersection > 0.0 && intersection < 1.0 = Just p'
   | otherwise = Nothing
-  where timeToImpact = (height - (Coordinate.y p)) / (Coordinate.y v)
-        height = boardHeight board
-        xPos = (Coordinate.x p) + ((Coordinate.x v) * timeToImpact)
-        p' = Coordinates xPos height
-        v' = deflectFromWall v
+  where (timeToImpact, intersection) = lineLineIntersection (p, v) edge
+        (edgeOrigin, edgeDirection) = edge
+        p' = edgeOrigin + (edgeDirection `vscale` intersection)
 
 deflectFromPaddle :: Velocity -> Velocity
 deflectFromPaddle (Coordinates vx vy) = Coordinates (-vx) vy
