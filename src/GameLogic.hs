@@ -122,42 +122,41 @@ gameEnded c b = weWon c b || weLost c b
           weWon (Coordinates x y) board = x > rightWallX board
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
-hitsOurPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOurPaddle p v board =
-  case hit of
-    Just p' -> Just (deflectFromPaddle v, p')
-    _ -> Nothing
-  where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
-        wallX = leftWallX board
-        hit = hitsEdge p v edge
+  hitsVerticalEdge p v board edgeX
+  where edgeX = leftWallX board
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
-hitsOpponentPaddle p (Coordinates 0.0 y) board = Nothing
 hitsOpponentPaddle p v board =
+  hitsVerticalEdge p v board edgeX
+  where edgeX = rightWallX board
+
+hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsCeiling p v board =
+  hitsHorizontalEdge p v board edgeY
+  where edgeY = 0.0
+
+hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
+hitsFloor p v board =
+  hitsHorizontalEdge p v board edgeY
+  where edgeY = boardHeight board
+
+hitsVerticalEdge :: Coordinates -> Velocity -> Board -> Float -> Maybe (Velocity,Coordinates)
+hitsVerticalEdge p (Coordinates 0.0 y) board edgeX = Nothing
+hitsVerticalEdge p v board edgeX =
   case hit of
     Just p' -> Just (deflectFromPaddle v, p')
     _ -> Nothing
-  where edge = ((Coordinates wallX 0.0), (Coordinates 0.0 (boardHeight board)))
-        wallX = rightWallX board
+  where edge = ((Coordinates edgeX 0.0), (Coordinates 0.0 (boardHeight board)))
         hit = hitsEdge p v edge
 
-hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
-hitsCeiling p (Coordinates x 0.0) board = Nothing
-hitsCeiling p v board =
+hitsHorizontalEdge :: Coordinates -> Velocity -> Board -> Float -> Maybe (Velocity,Coordinates)
+hitsHorizontalEdge p (Coordinates x 0.0) board edgeY = Nothing
+hitsHorizontalEdge p v board edgeY =
   case hit of
     Just p' -> Just(deflectFromWall v, p')
     _ -> Nothing
-  where edge = ((Coordinates (leftWallX board) 0.0), (Coordinates edgeLength 0.0))
-        edgeLength = (rightWallX board) - (leftWallX board)
-        hit = hitsEdge p v edge
-
-hitsFloor :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
-hitsFloor p (Coordinates x 0.0) board = Nothing
-hitsFloor p v board =
-  case hit of
-    Just p' -> Just(deflectFromWall v, p')
-    _ -> Nothing    
-  where edge = ((Coordinates (leftWallX board) (boardHeight board)), (Coordinates edgeLength 0.0))
+  where edge = ((Coordinates (leftWallX board) edgeY), (Coordinates edgeLength 0.0))
         edgeLength = (rightWallX board) - (leftWallX board)
         hit = hitsEdge p v edge
 
