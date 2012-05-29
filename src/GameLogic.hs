@@ -7,7 +7,7 @@ import Debug.Trace
 
 calculateDirection :: State -> (Float, [Coordinates])
 calculateDirection state =
-  Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v)) $  chooseDirection current (target, coords) board
+  Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v) ++ ", CAN WE MAKES IT?" ++ (show canWeMakeIt)) $  chooseDirection current (target, coords) board
   where history = boardHistory state
         board = head history
         current = leftPaddleMiddleY board
@@ -17,6 +17,7 @@ calculateDirection state =
         trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
         ballDistance = vectorLength trajectoryFromBall
         v = ballVelocity history
+        canWeMakeIt = canWeEasilyMakeItToSave current target (timeTakenFor ballDistance v)
 
 clampTargetPos :: Board -> Float -> Float
 clampTargetPos board yPos
@@ -79,6 +80,9 @@ chooseDirection currentY (targetY, coords) board
   | otherwise = (0.0, coords)
   where difference = targetY - currentY
         threshold = (paddleH board) / 8.0
+
+canWeEasilyMakeItToSave :: Float -> Float -> Float -> Bool
+canWeEasilyMakeItToSave ourPaddleY nextOurHitY timeToImpact = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.8)
 
 ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
 ballRouteToOurEnd (b:bs) =
