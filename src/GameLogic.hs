@@ -7,12 +7,15 @@ import Debug.Trace
 
 calculateDirection :: BoardHistory -> (Float, [Coordinates])
 calculateDirection history =
-  chooseDirection current (target, coords) board
+  Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v)) $  chooseDirection current (target, coords) board
   where board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
         (uncorrectedTarget, coords) = targetY history
         target = clampTargetPos board $ uncorrectedTarget + targetOffset
+        trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
+        ballDistance = vectorLength trajectoryFromBall
+        v = ballVelocity history
 
 clampTargetPos :: Board -> Float -> Float
 clampTargetPos board yPos
@@ -53,6 +56,17 @@ vectorFrom (Coordinates x1 y1) (Coordinates x2 y2) =
 normalizedVector :: Coordinates -> Coordinates
 normalizedVector (Coordinates x y) = Coordinates (x/len) (y/len)
   where len = sqrt (x*x + y*y)
+
+vectorLength :: [Coordinates] -> Float
+vectorLength (p:[]) = 0.0
+vectorLength (p1:p2:ps) = (sqrt (x * x + y * y)) + vectorLength ps
+  where x = abs(Coordinate.x p1 - Coordinate.x p2)
+        y = abs(Coordinate.y p1 - Coordinate.y p2)
+vectorLength _ = 0.0
+
+timeTakenFor :: Float -> Velocity -> Float
+timeTakenFor l v = l / (velocityLength)
+  where velocityLength = vectorLength [(Coordinates 0 0), v]
 
 dotProduct :: Coordinates -> Coordinates -> Float
 dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
