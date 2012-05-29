@@ -97,8 +97,8 @@ trollDirection state
           ourPaddleY = leftPaddleMiddleY board
           otherPaddleY = rightPaddleMiddleY board
           directionToOtherPaddle
-              | ourPaddleY < otherPaddleY = 1.0
-              | ourPaddleY > otherPaddleY = -1.0
+              | ourPaddleY < otherPaddleY = 0.5
+              | ourPaddleY > otherPaddleY = -0.5
               | otherwise = 0.0
 
 ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
