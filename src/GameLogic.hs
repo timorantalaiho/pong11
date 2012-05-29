@@ -11,7 +11,7 @@ calculateDirection history =
   where board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
-        (uncorrectedTarget, coords) = targetY history
+        (uncorrectedTarget, coords) = ballRouteToOurEnd history
         target = clampTargetPos board $ uncorrectedTarget + targetOffset
         trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
         ballDistance = vectorLength trajectoryFromBall
@@ -79,14 +79,14 @@ chooseDirection currentY (targetY, coords) board
   where difference = targetY - currentY
         threshold = (paddleH board) / 8.0
 
-targetY :: BoardHistory -> (Float, [Coordinates])
-targetY (b:bs) =
+ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
+ballRouteToOurEnd (b:bs) =
   (Coordinate.y $ head hitPoints, hitPoints)
   where p = ballCoordinates b
         history = (b:bs)
         v = ballVelocity history
         hitPoints = traceBallToOurPaddle p v b []
-targetY [] = (0.0, [])
+ballRouteToOurEnd [] = (0.0, [])
 
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints
