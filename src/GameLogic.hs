@@ -5,10 +5,11 @@ import Coordinate
 import Data.Maybe
 import Debug.Trace
 
-calculateDirection :: BoardHistory -> (Float, [Coordinates])
-calculateDirection history =
+calculateDirection :: State -> (Float, [Coordinates])
+calculateDirection state =
   Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v)) $  chooseDirection current (target, coords) board
-  where board = head history
+  where history = boardHistory state
+        board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
         (uncorrectedTarget, coords) = ballRouteToOurEnd history
