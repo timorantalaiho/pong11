@@ -6,18 +6,22 @@ import Data.Maybe
 import Debug.Trace
 
 calculateDirection :: State -> (Float, [Coordinates])
-calculateDirection state =
-  Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v) ++ ", CAN WE MAKES IT?" ++ (show canWeMakeIt)) $  chooseDirection current (target, coords) board
+calculateDirection state = directionToTake
+  --Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v) ++ ", CAN WE MAKES IT?" ++ (show canWeMakeIt)) $  directionToTake
   where history = boardHistory state
         board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
         (uncorrectedTarget, coords) = ballRouteToOurEnd history
-        target = clampTargetPos board $ uncorrectedTarget + targetOffset
+        targetToSaveBall = clampTargetPos board $ uncorrectedTarget + targetOffset
         trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
         ballDistance = vectorLength trajectoryFromBall
         v = ballVelocity history
-        canWeMakeIt = canWeEasilyMakeItToSave current target (timeTakenFor ballDistance v)
+        canWeMakeIt = canWeEasilyMakeItToSave current targetToSaveBall (timeTakenFor ballDistance v)
+        directionToSaveBall = chooseDirection current (targetToSaveBall, coords) board
+        directionToTake
+            | canWeMakeIt = (trollDirection state, snd directionToSaveBall)
+            | otherwise = directionToSaveBall
 
 clampTargetPos :: Board -> Float -> Float
 clampTargetPos board yPos
@@ -82,7 +86,19 @@ chooseDirection currentY (targetY, coords) board
         threshold = (paddleH board) / 8.0
 
 canWeEasilyMakeItToSave :: Float -> Float -> Float -> Bool
-canWeEasilyMakeItToSave ourPaddleY nextOurHitY timeToImpact = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.8)
+canWeEasilyMakeItToSave ourPaddleY nextOurHitY timeToImpact = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.05)
+
+trollDirection :: State -> Float
+trollDirection state
+    | ((length $ missiles state) >= 1) = directionToOtherPaddle
+    | otherwise = -1.0 * directionToOtherPaddle
+    where board = head $ boardHistory state
+          ourPaddleY = leftPaddleMiddleY board
+          otherPaddleY = rightPaddleMiddleY board
+          directionToOtherPaddle
+              | ourPaddleY < otherPaddleY = 1.0
+              | ourPaddleY > otherPaddleY = -1.0
+              | otherwise = 0.0
 
 ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
 ballRouteToOurEnd (b:bs) =
