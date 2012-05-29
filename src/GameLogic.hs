@@ -86,19 +86,21 @@ chooseDirection currentY (targetY, coords) board
         threshold = (paddleH board) / 8.0
 
 canWeEasilyMakeItToSave :: Board -> Float -> Float -> Float -> Bool
-canWeEasilyMakeItToSave board ourPaddleY nextOurHitY timeToImpact = ballIsFarAway && abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.1)
+canWeEasilyMakeItToSave board ourPaddleY nextOurHitY timeToImpact
+    | ballIsFarAway = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.6)
+    | otherwise = False
     where ballIsFarAway = (distanceToUs board > (3 * paddleH board))
 
 trollDirection :: State -> Float
 trollDirection state
     | ((length $ missiles state) >= 1) = directionToOtherPaddle
-    | otherwise = -1.0 * directionToOtherPaddle
+    | otherwise = -0.3 * directionToOtherPaddle
     where board = head $ boardHistory state
           ourPaddleY = leftPaddleMiddleY board
           otherPaddleY = rightPaddleMiddleY board
           directionToOtherPaddle
-              | ourPaddleY < otherPaddleY = 0.5
-              | ourPaddleY > otherPaddleY = -0.5
+              | ourPaddleY < otherPaddleY = 1.0
+              | ourPaddleY > otherPaddleY = -1.0
               | otherwise = 0.0
 
 ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
