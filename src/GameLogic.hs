@@ -17,7 +17,7 @@ calculateDirection state = directionToTake
         trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
         ballDistance = vectorLength trajectoryFromBall
         v = ballVelocity history
-        canWeMakeIt = canWeEasilyMakeItToSave current targetToSaveBall (timeTakenFor ballDistance v)
+        canWeMakeIt = canWeEasilyMakeItToSave board current targetToSaveBall (timeTakenFor ballDistance v)
         directionToSaveBall = chooseDirection current (targetToSaveBall, coords) board
         directionToTake
             | canWeMakeIt = (trollDirection state, snd directionToSaveBall)
@@ -85,8 +85,9 @@ chooseDirection currentY (targetY, coords) board
   where difference = targetY - currentY
         threshold = (paddleH board) / 8.0
 
-canWeEasilyMakeItToSave :: Float -> Float -> Float -> Bool
-canWeEasilyMakeItToSave ourPaddleY nextOurHitY timeToImpact = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.05)
+canWeEasilyMakeItToSave :: Board -> Float -> Float -> Float -> Bool
+canWeEasilyMakeItToSave board ourPaddleY nextOurHitY timeToImpact = ballIsFarAway && abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.1)
+    where ballIsFarAway = (distanceToUs board > (3 * paddleH board))
 
 trollDirection :: State -> Float
 trollDirection state
