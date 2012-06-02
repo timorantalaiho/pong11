@@ -6,6 +6,7 @@ import Data.Maybe
 import Debug.Trace
 
 type Line = (Coordinates, Coordinates)
+data PaddleDefinition = PaddleDefinition { y :: Float, height :: Float, gradient :: Float -> Coordinates  }
 
 instance Eq Coordinates where
   (==) (Coordinates x1 y1) (Coordinates x2 y2) = (x1 == x2) && (y1 == y2)
@@ -104,7 +105,7 @@ targetY [] = (0.0, [])
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints
     | ballStopped v = p : hitPoints
-    | gameEnded p board = (deflectFromPaddle v) : hitPoints
+    | gameEnded p board = (deflectFromEndWall v) : hitPoints
     | isJust ourPaddleHit = p' : hitPoints
     | otherwise = traceBallToOurPaddle p' v' board (p' : hitPoints)
     where hitTests = [hitsOurPaddle, hitsOpponentPaddle, hitsCeiling, hitsFloor]
@@ -123,13 +124,17 @@ gameEnded c b = weWon c b || weLost c b
 
 hitsOurPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOurPaddle p v board =
-  hitsVerticalEdge p v board edgeX
+  hitsVerticalEdge p v board edgeX paddle
   where edgeX = leftWallX board
+        paddle = PaddleDefinition (Domain.y $ left board) (paddleH board) (paddleGradient)
+        paddleGradient = (\x -> Coordinates (1.0) (x / 200.0))
 
 hitsOpponentPaddle :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsOpponentPaddle p v board =
-  hitsVerticalEdge p v board edgeX
+  hitsVerticalEdge p v board edgeX paddle
   where edgeX = rightWallX board
+        paddle = PaddleDefinition (Domain.y $ right board) (paddleH board) (paddleGradient)
+        paddleGradient = (\x -> Coordinates (-1.0) (x / 200.0))
 
 hitsCeiling :: Coordinates -> Velocity -> Board -> Maybe (Velocity,Coordinates)
 hitsCeiling p v board =
@@ -141,11 +146,11 @@ hitsFloor p v board =
   hitsHorizontalEdge p v board edgeY
   where edgeY = boardHeight board
 
-hitsVerticalEdge :: Coordinates -> Velocity -> Board -> Float -> Maybe (Velocity,Coordinates)
-hitsVerticalEdge p (Coordinates 0.0 y) board edgeX = Nothing
-hitsVerticalEdge p v board edgeX =
+hitsVerticalEdge :: Coordinates -> Velocity -> Board -> Float -> PaddleDefinition -> Maybe (Velocity,Coordinates)
+hitsVerticalEdge p (Coordinates 0.0 y) board edgeX paddle = Nothing
+hitsVerticalEdge p v board edgeX paddle =
   case hit of
-    Just p' -> Just (deflectFromPaddle v, p')
+    Just p' -> Just (deflectFromPaddle v paddle p', p')
     _ -> Nothing
   where edge = ((Coordinates edgeX 0.0), (Coordinates 0.0 (boardHeight board)))
         hit = hitsEdge p v edge
@@ -168,8 +173,11 @@ hitsEdge p v edge
         (edgeOrigin, edgeDirection) = edge
         p' = edgeOrigin + (edgeDirection `vscale` intersection)
 
-deflectFromPaddle :: Velocity -> Velocity
-deflectFromPaddle (Coordinates vx vy) = Coordinates (-vx) vy
+deflectFromPaddle :: Velocity -> PaddleDefinition -> Coordinates -> Velocity
+deflectFromPaddle (Coordinates vx vy) paddle position = Coordinates (-vx) vy
+
+deflectFromEndWall :: Velocity -> Velocity
+deflectFromEndWall (Coordinates vx vy) = Coordinates (-vx) vy
 
 deflectFromWall :: Velocity -> Velocity
 deflectFromWall (Coordinates vx vy) = Coordinates vx (-vy)
