@@ -77,6 +77,14 @@ dotProduct (Coordinates x1 y1) (Coordinates x2 y2) = x1 * x2 + y1 * y2
 perpendicular :: Coordinates -> Coordinates
 perpendicular (Coordinates vx vy) = Coordinates (negate vy) vx
 
+vectorAngle (Coordinates vx vy) = atan (vy / vx)
+
+rotateVector (Coordinates vx vy) angle = Coordinates (vx * cos angle - vy * sin angle) (vx * sin angle + vy * cos angle)
+
+vectorLength (Coordinates vx vy) = sqrt (vx * vx + vy * vy)
+
+setVectorLength vector length = vscale (normalizedVector vector) length
+
 lineLineIntersection :: Line -> Line -> (Float, Float)
 lineLineIntersection (base1, direction1) (base2, direction2) =
   (s, t)
@@ -150,7 +158,7 @@ hitsVerticalEdge :: Coordinates -> Velocity -> Board -> Float -> PaddleDefinitio
 hitsVerticalEdge p (Coordinates 0.0 y) board edgeX paddle = Nothing
 hitsVerticalEdge p v board edgeX paddle =
   case hit of
-    Just p' -> Just (deflectFromPaddle v paddle p', p')
+    Just p' -> Just (deflectFromVerticalEdge v paddle p', p')
     _ -> Nothing
   where edge = ((Coordinates edgeX 0.0), (Coordinates 0.0 (boardHeight board)))
         hit = hitsEdge p v edge
@@ -173,12 +181,17 @@ hitsEdge p v edge
         (edgeOrigin, edgeDirection) = edge
         p' = edgeOrigin + (edgeDirection `vscale` intersection)
 
-deflectFromPaddle :: Velocity -> PaddleDefinition -> Coordinates -> Velocity
-deflectFromPaddle (Coordinates vx vy) (PaddleDefinition paddleY paddleHeight paddleGradient) (Coordinates px py)
-  | isWithinPaddleBounds py = calculateDeflectionFromPaddle
+deflectFromVerticalEdge :: Velocity -> PaddleDefinition -> Coordinates -> Velocity
+deflectFromVerticalEdge (Coordinates vx vy) (PaddleDefinition paddleY paddleHeight paddleGradient) (Coordinates px py)
+  | isWithinPaddleBounds py = deflectFromPaddle (Coordinates vx vy) (PaddleDefinition paddleY paddleHeight paddleGradient) (Coordinates px py)
   | otherwise = deflectFromEndWall (Coordinates vx vy)
-  where calculateDeflectionFromPaddle = Coordinates (-vx) vy
-        isWithinPaddleBounds = (\y -> y >= paddleY && y <= (paddleY + paddleHeight))
+  where isWithinPaddleBounds = (\y -> y >= paddleY && y <= (paddleY + paddleHeight))
+
+deflectFromPaddle (Coordinates vx vy) (PaddleDefinition paddleY paddleHeight paddleGradient) (Coordinates px py) =
+  setVectorLength (rotateVector paddleGradientAtImpact angleDiff) (vectorLength (Coordinates vx vy))
+  where paddleGradientAtImpact = paddleGradient (py - paddleMiddleY)
+        paddleMiddleY = paddleY + (paddleHeight / 2)
+        angleDiff = vectorAngle paddleGradientAtImpact - vectorAngle (Coordinates vx vy)
 
 deflectFromEndWall :: Velocity -> Velocity
 deflectFromEndWall (Coordinates vx vy) = Coordinates (-vx) vy
