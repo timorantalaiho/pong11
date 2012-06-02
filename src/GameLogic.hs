@@ -174,7 +174,11 @@ hitsEdge p v edge
         p' = edgeOrigin + (edgeDirection `vscale` intersection)
 
 deflectFromPaddle :: Velocity -> PaddleDefinition -> Coordinates -> Velocity
-deflectFromPaddle (Coordinates vx vy) paddle position = Coordinates (-vx) vy
+deflectFromPaddle (Coordinates vx vy) (PaddleDefinition paddleY paddleHeight paddleGradient) (Coordinates px py)
+  | isWithinPaddleBounds py = calculateDeflectionFromPaddle
+  | otherwise = deflectFromEndWall (Coordinates vx vy)
+  where calculateDeflectionFromPaddle = Coordinates (-vx) vy
+        isWithinPaddleBounds = (\y -> y >= paddleY && y <= (paddleY + paddleHeight))
 
 deflectFromEndWall :: Velocity -> Velocity
 deflectFromEndWall (Coordinates vx vy) = Coordinates (-vx) vy
