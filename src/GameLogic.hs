@@ -9,14 +9,23 @@ import Vector
 type Line = (Coordinates, Coordinates)
 data PaddleDefinition = PaddleDefinition { y :: Float, height :: Float, gradient :: Float -> Coordinates  }
 
-calculateDirection :: BoardHistory -> (Float, [Coordinates])
-calculateDirection history =
-  chooseDirection current (target, coords) board
-  where board = head history
+calculateDirection :: State -> (Float, [Coordinates])
+calculateDirection state = directionToTake
+  --Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v) ++ ", CAN WE MAKES IT?" ++ (show canWeMakeIt)) $  directionToTake
+  where history = boardHistory state
+        board = head history
         current = leftPaddleMiddleY board
         targetOffset = negate $ ((ballAngle coords) * (paddleH board)) / 2.0
-        (uncorrectedTarget, coords) = targetY history
-        target = clampTargetPos board $ uncorrectedTarget + targetOffset
+        (uncorrectedTarget, coords) = ballRouteToOurEnd history
+        targetToSaveBall = clampTargetPos board $ uncorrectedTarget + targetOffset
+        trajectoryFromBall = reverse $ (ballCoordinates board) : reverse coords
+        ballDistance = trajectoryLength trajectoryFromBall
+        v = ballVelocity history
+        canWeMakeIt = canWeEasilyMakeItToSave board current targetToSaveBall (timeTakenFor ballDistance v)
+        directionToSaveBall = chooseDirection current (targetToSaveBall, coords) board
+        directionToTake
+            | canWeMakeIt = (trollDirection state, snd directionToSaveBall)
+            | otherwise = directionToSaveBall
 
 clampTargetPos :: Board -> Float -> Float
 clampTargetPos board yPos
@@ -54,6 +63,17 @@ lineLineIntersection (base1, direction1) (base2, direction2) =
         perDirection2 = perpendicular direction2
         perDirection1 = perpendicular direction1
 
+trajectoryLength :: [Coordinates] -> Float
+trajectoryLength (p:[]) = 0.0
+trajectoryLength (p1:p2:ps) = (sqrt (x * x + y * y)) + trajectoryLength ps
+  where x = abs(Coordinate.x p1 - Coordinate.x p2)
+        y = abs(Coordinate.y p1 - Coordinate.y p2)
+trajectoryLength _ = 0.0
+
+timeTakenFor :: Float -> Velocity -> Float
+timeTakenFor l v = l / (velocityLength)
+  where velocityLength = vectorLength v
+
 chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
 chooseDirection currentY (targetY, coords) board
   | difference < (-threshold) = (-1.0, coords)
@@ -62,14 +82,32 @@ chooseDirection currentY (targetY, coords) board
   where difference = targetY - currentY
         threshold = (paddleH board) / 8.0
 
-targetY :: BoardHistory -> (Float, [Coordinates])
-targetY (b:bs) =
+canWeEasilyMakeItToSave :: Board -> Float -> Float -> Float -> Bool
+canWeEasilyMakeItToSave board ourPaddleY nextOurHitY timeToImpact
+    | ballIsFarAway = abs(ourPaddleY - nextOurHitY) < (timeToImpact * 0.6)
+    | otherwise = False
+    where ballIsFarAway = (distanceToUs board > (3 * paddleH board))
+
+trollDirection :: State -> Float
+trollDirection state
+    | ((length $ missiles state) >= 1) = directionToOtherPaddle
+    | otherwise = -0.3 * directionToOtherPaddle
+    where board = head $ boardHistory state
+          ourPaddleY = leftPaddleMiddleY board
+          otherPaddleY = rightPaddleMiddleY board
+          directionToOtherPaddle
+              | ourPaddleY < otherPaddleY = 1.0
+              | ourPaddleY > otherPaddleY = -1.0
+              | otherwise = 0.0
+
+ballRouteToOurEnd :: BoardHistory -> (Float, [Coordinates])
+ballRouteToOurEnd (b:bs) =
   (Coordinate.y $ head hitPoints, hitPoints)
   where p = ballCoordinates b
         history = (b:bs)
         v = ballVelocity history
         hitPoints = traceBallToOurPaddle p v b []
-targetY [] = (0.0, [])
+ballRouteToOurEnd [] = (0.0, [])
 
 traceBallToOurPaddle :: Coordinates -> Velocity -> Board -> [Coordinates] -> [Coordinates]
 traceBallToOurPaddle p v board hitPoints

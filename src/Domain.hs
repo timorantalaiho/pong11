@@ -63,3 +63,10 @@ ballCoordinates = Domain.pos . ball
 
 ballR :: Board -> Int 
 ballR = ballRadius . conf
+
+ballX :: Board -> Float
+ballX b = Coordinate.x $ ballCoordinates b
+
+distanceToUs :: Board -> Float
+distanceToUs b = abs(ballX b - leftWallX b)
+
