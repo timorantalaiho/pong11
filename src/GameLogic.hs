@@ -65,9 +65,7 @@ lineLineIntersection (base1, direction1) (base2, direction2) =
 
 trajectoryLength :: [Coordinates] -> Float
 trajectoryLength (p:[]) = 0.0
-trajectoryLength (p1:p2:ps) = (sqrt (x * x + y * y)) + trajectoryLength ps
-  where x = abs(Coordinate.x p1 - Coordinate.x p2)
-        y = abs(Coordinate.y p1 - Coordinate.y p2)
+trajectoryLength (p1:p2:ps) = (vectorLength $ vectorTo p2 p1) + trajectoryLength ps
 trajectoryLength _ = 0.0
 
 timeTakenFor :: Float -> Velocity -> Float
