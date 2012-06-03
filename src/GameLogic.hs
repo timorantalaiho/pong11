@@ -8,8 +8,9 @@ import Vector
 
 type Line = (Coordinates, Coordinates)
 data PaddleDefinition = PaddleDefinition { y :: Float, height :: Float, gradient :: Float -> Coordinates  }
+data CalculationResults = CalculationResults { direction :: Float, wayPoints :: [Coordinates] }
 
-calculateDirection :: State -> (Float, [Coordinates])
+calculateDirection :: State -> CalculationResults
 calculateDirection state = directionToTake
   --Debug.Trace.trace ("DISTANCE: " ++ show ballDistance ++ ", TIME TO HIT:" ++ (show $ timeTakenFor ballDistance v) ++ ", CAN WE MAKES IT?" ++ (show canWeMakeIt)) $  directionToTake
   where history = boardHistory state
@@ -24,7 +25,7 @@ calculateDirection state = directionToTake
         canWeMakeIt = canWeEasilyMakeItToSave board current targetToSaveBall (timeTakenFor ballDistance v)
         directionToSaveBall = chooseDirection current (targetToSaveBall, coords) board
         directionToTake
-            | canWeMakeIt = (trollDirection state, snd directionToSaveBall)
+            | canWeMakeIt = CalculationResults (trollDirection state) (wayPoints directionToSaveBall)
             | otherwise = directionToSaveBall
 
 clampTargetPos :: Board -> Float -> Float
@@ -72,11 +73,11 @@ timeTakenFor :: Float -> Velocity -> Float
 timeTakenFor l v = l / (velocityLength)
   where velocityLength = vectorLength v
 
-chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> (Float, [Coordinates])
+chooseDirection :: Float -> (Float, [Coordinates]) -> Board -> CalculationResults
 chooseDirection currentY (targetY, coords) board
-  | difference < (-threshold) = (-1.0, coords)
-  | difference >  threshold = ( 1.0, coords)
-  | otherwise = (0.0, coords)
+  | difference < (-threshold) = CalculationResults (-1.0) coords
+  | difference >  threshold = CalculationResults 1.0 coords
+  | otherwise = CalculationResults 0.0 coords
   where difference = targetY - currentY
         threshold = (paddleH board) / 8.0
 
