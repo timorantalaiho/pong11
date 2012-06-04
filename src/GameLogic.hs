@@ -90,7 +90,7 @@ canWeEasilyMakeItToSave board ourPaddleY nextOurHitY timeToImpact
 trollDirection :: State -> Float
 trollDirection state
     | ((length $ missiles state) >= 1) = directionToOtherPaddle
-    | otherwise = -0.3 * directionToOtherPaddle
+    | otherwise = -0.1 * directionToOtherPaddle
     where board = head $ boardHistory state
           ourPaddleY = leftPaddleMiddleY board
           otherPaddleY = rightPaddleMiddleY board
